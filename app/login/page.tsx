@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <main
-      className={`${fraunces.variable} ${plexMono.variable} ${inter.variable} overflow-hidden h-screen bg-slate-900 font-[var(--font-sans)]`}
+      className={`${fraunces.variable} ${plexMono.variable} ${inter.variable} md:overflow-hidden h-screen bg-slate-900 font-[var(--font-sans)]`}
     >
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
         {/* Left Section */}
