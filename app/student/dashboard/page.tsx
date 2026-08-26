@@ -9,7 +9,23 @@ export default function StudentDashboardPage() {
   // Dark Mode State
   const [darkMode, setDarkMode] = useState(false);
 
-  // Initialize Theme
+  // Dynamic state for registered courses & faculty
+  const [currentCoursesCount, setCurrentCoursesCount] = useState(4);
+  const [currentFaculty, setCurrentFaculty] = useState({
+    name: "Dr. R. Arunkumar",
+    id: "CS1121",
+    department: "Computer Science & Engineering",
+    course: "Course on Next.js 15 & AI Integration",
+    email: "arunkumar.cse@university.edu",
+  });
+
+  // Attendance metrics
+  const totalDays = 90;
+  const attendedDays = 81;
+  const absentDays = totalDays - attendedDays;
+  const attendancePercentage = ((attendedDays / totalDays) * 100).toFixed(1);
+
+  // Initialize Theme & load courses
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const isDark = savedTheme ? JSON.parse(savedTheme) : false;
@@ -18,6 +34,26 @@ export default function StudentDashboardPage() {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
+    }
+
+    // Load dynamic registered courses if available
+    const loaded = localStorage.getItem("registered_courses");
+    if (loaded) {
+      try {
+        const parsed = JSON.parse(loaded);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCurrentCoursesCount(parsed.length);
+          if (parsed[0].organizer) {
+            setCurrentFaculty((prev) => ({
+              ...prev,
+              course: parsed[0].name || prev.course,
+              id: parsed[0].organizer || prev.id,
+            }));
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse registered courses", e);
+      }
     }
   }, []);
 
@@ -38,26 +74,9 @@ export default function StudentDashboardPage() {
     router.replace("/login");
   };
 
-  // Detailed points split up list (replacing event terminology with course)
-  const pointsSplitUp = [
-    { label: "Technical Courses(0)", value: "0.00" },
-    { label: "Skills", value: "0.00" },
-    { label: "Assignments(0)", value: "0.00" },
-    { label: "Interview(0)", value: "0.00" },
-    { label: "Technical Society Courses(0)", value: "0.00" },
-    { label: "Product Development", value: "0.00" },
-    { label: "TAC", value: "0.00" },
-    { label: "Special Lab Initiatives(0)", value: "0.00" },
-    { label: "Extra-Curricular Activities(0)", value: "0.00" },
-    { label: "Student Initiatives", value: "0.00" },
-    { label: "External Courses", value: "0.00" },
-    { label: "Cumulative Points", value: "0.00" },
-    { label: "REWARD POINTS FROM HONOR POINTS", value: "0.00" },
-  ];
-
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. SIDEBAR */}
+      {/* 1. SIDEBAR (Unchanged) */}
       <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 h-screen sticky top-0 transition-colors duration-300 z-10">
         <div>
           {/* Logo / Title */}
@@ -77,16 +96,6 @@ export default function StudentDashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Dashboard
-            </a>
-
-            <a
-              href="#"
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              Points Container
             </a>
 
             {/* Course Register Menu */}
@@ -133,8 +142,13 @@ export default function StudentDashboardPage() {
       <main className="flex-1 p-6 md:p-8 transition-colors duration-300 overflow-y-auto h-screen">
         {/* Header Bar */}
         <header className="flex justify-between items-center w-full mb-6">
-          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Dashboard
+          <div>
+            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Student Dashboard
+            </div>
+            <div className="text-[11px] text-slate-400 dark:text-slate-500">
+              Academic Term 2023–2024 (Even Semester)
+            </div>
           </div>
 
           {/* Theme Toggle Button */}
@@ -156,69 +170,121 @@ export default function StudentDashboardPage() {
           </button>
         </header>
 
-        {/* Dashboard Grid Content */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Dashboard Content Container */}
+        <div className="space-y-6 max-w-6xl">
           
-          {/* Left Column (takes 2 span size on larger viewports) */}
-          <div className="xl:col-span-2 space-y-6">
-            
-            {/* Top row: Graph & Quick Stats Card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 transition-colors duration-300">
+          {/* 1. ATTENDANCE VS TOTAL DAYS CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               
-              {/* Visual chart mock */}
-              <div className="flex flex-col justify-between">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Second Year Course Points Graph
-                </span>
+              {/* Left Column: Visual Bar Chart & Trend */}
+              <div className="flex flex-col justify-between h-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Attendance vs Total Days
+                    </span>
+                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                      Semester Attendance (Target ≥ 75%)
+                    </span>
+                  </div>
+                  <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 px-2.5 py-1 rounded-md">
+                    {attendancePercentage}% Overall
+                  </span>
+                </div>
                 
-                {/* Bar chart representation */}
-                <div className="h-48 flex items-end gap-6 border-b border-l border-slate-100 dark:border-slate-800 p-4 mt-4 relative">
+                {/* Bar chart representation with reduced width */}
+                <div className="h-48 max-w-[280px] mx-auto w-full flex items-end justify-center gap-10 border-b border-l border-slate-100 dark:border-slate-800 p-4 mt-3 relative">
                   
                   {/* Left scale indicators */}
-                  <div className="absolute left-2 top-2 text-[10px] text-slate-400">500</div>
-                  <div className="absolute left-2 top-16 text-[10px] text-slate-400">300</div>
-                  <div className="absolute left-2 top-32 text-[10px] text-slate-400">100</div>
+                  <div className="absolute left-2 top-2 text-[10px] text-slate-400">100%</div>
+                  <div className="absolute left-2 top-14 text-[10px] text-slate-400">75%</div>
+                  <div className="absolute left-2 top-26 text-[10px] text-slate-400">50%</div>
+                  <div className="absolute left-2 top-38 text-[10px] text-slate-400">25%</div>
 
-                  {/* Bar 1 */}
-                  <div className="flex-1 flex flex-col items-center gap-2 z-10">
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-350">245.12</span>
-                    <div className="w-12 bg-amber-400 rounded-t-lg transition-all duration-500 hover:opacity-90" style={{ height: "98px" }}></div>
-                    <span className="text-[10px] font-semibold text-slate-400 mt-1">Average Points</span>
+                  {/* Bar 1: Total Working Days */}
+                  <div className="flex flex-col items-center gap-2 z-10 w-20">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-350">
+                      {totalDays} Days
+                    </span>
+                    <div
+                      className="w-12 bg-slate-300 dark:bg-slate-700 rounded-t-lg transition-all duration-500 hover:opacity-90"
+                      style={{ height: "140px" }}
+                    ></div>
+                    <span className="text-[10px] font-semibold text-slate-400 mt-1 text-center">
+                      Total Days
+                    </span>
                   </div>
 
-                  {/* Bar 2 */}
-                  <div className="flex-1 flex flex-col items-center gap-2 z-10">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">435.34</span>
-                    <div className="w-12 bg-indigo-500 dark:bg-indigo-600 rounded-t-lg transition-all duration-500 hover:opacity-90" style={{ height: "174px" }}></div>
-                    <span className="text-[10px] font-semibold text-slate-400 mt-1">Overall Points</span>
+                  {/* Bar 2: Days Attended / Attendance Percentage */}
+                  <div className="flex flex-col items-center gap-2 z-10 w-20">
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      {attendancePercentage}%
+                    </span>
+                    <div
+                      className="w-12 bg-gradient-to-t from-indigo-600 to-indigo-500 dark:from-indigo-700 dark:to-indigo-500 rounded-t-lg transition-all duration-500 hover:opacity-90 shadow-sm"
+                      style={{ height: `${(attendedDays / totalDays) * 140}px` }}
+                    ></div>
+                    <span className="text-[10px] font-semibold text-slate-400 mt-1 text-center">
+                      Attended ({attendedDays}d)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sub-metrics inside left area: Theory vs Lab */}
+                <div className="grid grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Theory Classes</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">92.0% (46/50)</span>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Lab / Practical</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">87.5% (35/40)</span>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Leaves Left</span>
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block">13 Days Safe</span>
                   </div>
                 </div>
               </div>
 
-              {/* Quick statistics details split */}
+              {/* Right Column: Quick Attendance Statistics & Details */}
               <div className="flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-6">
-                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-slate-50/50 dark:bg-slate-950/20 text-center space-y-4">
+                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-slate-50/50 dark:bg-slate-950/20 text-center space-y-3.5">
                   <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
                     <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Points Details
+                    Attendance Breakdown
                   </div>
                   
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span>Average Reward Points:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400">2567</span>
+                  <div className="space-y-2 text-left">
+                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
+                      <span>Total Semester Days:</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{totalDays} Days</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
+                      <span>Days Present:</span>
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400">{attendedDays} Days</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
+                      <span>Unexcused Absent:</span>
+                      <span className="font-bold text-rose-500">{absentDays - 3} Days</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
+                      <span>OD / Medical Approved:</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">3 Days</span>
                     </div>
                     <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span>Total Reward Points Earned:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400">1500</span>
+                      <span>Attendance Buffer:</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">+15.0% above 75%</span>
                     </div>
                   </div>
 
-                  <div className="pt-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400">
-                      Need Improvement
+                  <div className="pt-1">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Eligible for Semester Exams
                     </span>
                   </div>
 
@@ -226,95 +292,183 @@ export default function StudentDashboardPage() {
                     type="button"
                     className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-xs font-bold shadow-sm cursor-default"
                   >
-                    Position #145/240
+                    Attendance Status: {attendancePercentage}% (Safe Zone)
                   </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Card: Points Summary */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
-              <div className="flex items-center gap-2 mb-6">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Points Summary
-                </h3>
-              </div>
-
-              {/* 4 Cards Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {/* Total Points */}
-                <div className="bg-indigo-600 dark:bg-indigo-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Total Points</span>
-                  <span className="text-base font-extrabold mt-3">RP 2238</span>
-                </div>
-
-                {/* Balance Points */}
-                <div className="bg-emerald-600 dark:bg-emerald-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Balance Points</span>
-                  <span className="text-base font-extrabold mt-3">RP 1274</span>
-                </div>
-
-                {/* Redeemed Points */}
-                <div className="bg-amber-500 dark:bg-amber-600 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Redeemed Points</span>
-                  <span className="text-base font-extrabold mt-3">RP 1903</span>
-                </div>
-
-                {/* Penalties Points */}
-                <div className="bg-rose-500 dark:bg-rose-600 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Penalties Points</span>
-                  <span className="text-base font-extrabold mt-3">RP 00</span>
-                </div>
-              </div>
-
-              {/* Semester Carry Forwards Notes */}
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
-                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 rounded-xl p-3.5 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="max-w-[190px]">Eligible carry in points from previous semester (2023 - ODD)</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-extrabold ml-2">RP 1000</span>
-                </div>
-                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 rounded-xl p-3.5 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="max-w-[190px]">Eligible carry forward points to next semester (2023 - EVEN)</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-extrabold ml-2">RP 1000</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Detailed Split Table */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300 flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <svg className="h-4 w-4 text-indigo-650" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                  </svg>
-                  Detailed Points Split up
+          {/* 2. CREDITS & COURSE SUMMARY CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Credits & Course Summary
                 </h3>
-                <span className="text-[10px] text-slate-400 mt-1 block">2023-2024 Even Semester</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => router.push("/student/my-course")}
+                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                View All Enrolled Courses →
+              </button>
+            </div>
+
+            {/* 4 Cards Grid: Total Credits, Redeemed Credits, Available Credits, Current Courses */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Total Credits */}
+              <div className="bg-indigo-600 dark:bg-indigo-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Total Credits</span>
+                <span className="text-base font-extrabold mt-3">24.0 Credits</span>
+              </div>
+
+              {/* Redeemed Credits */}
+              <div className="bg-amber-500 dark:bg-amber-600 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Redeemed Credits</span>
+                <span className="text-base font-extrabold mt-3">18.0 Credits</span>
+              </div>
+
+              {/* Available / Balance Credits */}
+              <div className="bg-emerald-600 dark:bg-emerald-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Available Credits</span>
+                <span className="text-base font-extrabold mt-3">6.0 Credits</span>
+              </div>
+
+              {/* Current Courses */}
+              <div className="bg-purple-600 dark:bg-purple-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Current Courses</span>
+                <span className="text-base font-extrabold mt-3">{currentCoursesCount} Enrolled</span>
               </div>
             </div>
 
-            {/* Tab */}
-            <div className="mb-4">
-              <span className="inline-flex px-3 py-1.5 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-950 text-xs font-semibold rounded-lg">
-                Course Points Details
-              </span>
+            {/* Sub-Row: Detailed Points Distribution & Enrolled Courses Quick Status */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Honour Credits</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">16.0 Earned</span>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400">
+                  Target: 20.0
+                </span>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Reward Credits</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">8.0 Earned</span>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
+                  Activities / Labs
+                </span>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Academic Standing</span>
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">Gold Standing</span>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+                  Top 10%
+                </span>
+              </div>
             </div>
 
-            {/* Split up List */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/60 overflow-y-auto max-h-[360px] pr-2">
-              {pointsSplitUp.map((item, idx) => (
-                <div key={idx} className="py-2.5 flex justify-between items-center text-xs font-medium">
-                  <span className="text-slate-500 dark:text-slate-450">{item.label}</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{item.value}</span>
+            {/* Enrolled Courses Quick Badges Row */}
+            <div className="pt-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                Enrolled Course Progress
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Next.js 15 & AI</span>
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">80% Done</span>
                 </div>
-              ))}
+                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Cybersecurity</span>
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">65% Done</span>
+                </div>
+                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">UI/UX Design</span>
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">90% Done</span>
+                </div>
+                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Generative AI</span>
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">45% Done</span>
+                </div>
+              </div>
             </div>
+
+            {/* Current Faculty In-Charge Detailed Banner */}
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-5">
+              <div className="bg-slate-50/70 dark:bg-slate-950/40 border border-slate-200/70 dark:border-slate-800 rounded-xl p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                
+                {/* 1. Faculty Details (Left) */}
+                <div className="flex items-center gap-3.5">
+                  <div className="h-11 w-11 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200/50 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm shrink-0">
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                        Current Faculty In-Charge
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        • {currentFaculty.id}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
+                      {currentFaculty.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {currentFaculty.department}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Office & Availability (Center - filling the empty space) */}
+                <div className="border-t md:border-t-0 md:border-l md:border-r border-slate-200 dark:border-slate-800 pt-3 md:pt-0 md:px-4 text-xs space-y-1">
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] uppercase font-semibold">Faculty Office:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300">Room 304, CS Block</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] uppercase font-semibold">Consultation Hours:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">03:00 PM – 05:00 PM</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] uppercase font-semibold">Status:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Available
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Active Course & Contact (Right) */}
+                <div className="text-left md:text-right border-t md:border-t-0 border-slate-200 dark:border-slate-800 pt-3 md:pt-0">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase block">Active Course</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[240px] truncate block">
+                    {currentFaculty.course}
+                  </span>
+                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium block mt-0.5">
+                    {currentFaculty.email}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-0.5">
+                    Next Session: Thu, 10:00 AM @ Lab 3
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -322,3 +476,5 @@ export default function StudentDashboardPage() {
     </div>
   );
 }
+
+
