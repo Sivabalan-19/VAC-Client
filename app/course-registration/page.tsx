@@ -1,53 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "../context/StoreContext";
 
 export default function CourseRegistrationPage() {
   const router = useRouter();
-
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode, logout, createCourse } = useStore();
 
   // Form State
-  const [courseType, setCourseType] = useState("");
-  const [courseCategory, setCourseCategory] = useState("");
+  const [courseType, setCourseType] = useState("Technical Skills");
+  const [courseCategory, setCourseCategory] = useState("Information Technology");
   const [courseMode, setCourseMode] = useState("online");
   const [creditCategory, setCreditCategory] = useState("vac");
   const [courseName, setCourseName] = useState("");
   const [courseDetails, setCourseDetails] = useState("");
-  const [maxIntake, setMaxIntake] = useState("");
-  const [deptYear, setDeptYear] = useState("");
+  const [maxIntake, setMaxIntake] = useState("60");
+  const [deptYear, setDeptYear] = useState("3rd Year");
 
   // Notification state
   const [notifications, setNotifications] = useState(false);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
   const handleSignOut = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    router.replace("/login");
+    logout();
   };
 
   const handleReset = () => {
@@ -63,18 +38,35 @@ export default function CourseRegistrationPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting course:", {
-      courseType,
-      courseCategory,
-      courseMode,
-      creditCategory,
-      courseName,
-      courseDetails,
-      maxIntake,
-      deptYear,
+    if (!courseName.trim()) {
+      alert("Please enter a course title.");
+      return;
+    }
+
+    createCourse({
+      name: courseName,
+      code: `CS${Math.floor(1000 + Math.random() * 9000)}`,
+      type: courseType || "Technical Skills",
+      category: courseCategory || "Information Technology",
+      instructor: "Dr. Sarah Connor",
+      department: "Computer Science",
+      deptYear: deptYear || "3rd Year",
+      mode: (courseMode as any) || "Online",
+      credits: 2,
+      maxIntake: Number(maxIntake) || 60,
+      regStartDate: "2026-08-20",
+      regEndDate: "2026-08-25",
+      startDate: "2026-08-28 09:00:00",
+      endDate: "2026-08-29 17:00:00",
+      location: "Virtual Classroom",
+      imageUrl: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop",
+      details: courseDetails || "Comprehensive course designed to build core competencies.",
     });
-    alert("Course Registration Proposal Saved for Step 2!");
+
+    alert("Course Proposal Saved and added to Value Added Course listings!");
+    router.push("/faculty/course");
   };
+
 
   return (
     <div className="flex min-h-screen w-full bg-[#f4f7fe] dark:bg-[#0b1437] transition-colors duration-300 font-sans">

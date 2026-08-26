@@ -1,78 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "../../context/StoreContext";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
+  const {
+    user,
+    courses,
+    registeredCourseIds,
+    darkMode,
+    toggleDarkMode,
+    logout,
+    getStudentAttendanceSummary,
+  } = useStore();
 
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
+  const registeredCourses = courses.filter((c) => registeredCourseIds.includes(c.id));
+  const currentCoursesCount = registeredCourses.length;
 
-  // Dynamic state for registered courses & faculty
-  const [currentCoursesCount, setCurrentCoursesCount] = useState(4);
-  const [currentFaculty, setCurrentFaculty] = useState({
-    name: "Dr. R. Arunkumar",
-    id: "CS1121",
-    department: "Computer Science & Engineering",
-    course: "Course on Next.js 15 & AI Integration",
-    email: "arunkumar.cse@university.edu",
-  });
+  // Dynamic Credits
+  const totalEarnedCredits = registeredCourses.reduce((acc, c) => acc + (c.credits || 2), 0);
+  const redeemedCredits = Math.min(totalEarnedCredits, 4.0);
+  const availableCredits = Math.max(0, totalEarnedCredits - redeemedCredits);
 
-  // Attendance metrics
-  const totalDays = 90;
-  const attendedDays = 81;
-  const absentDays = totalDays - attendedDays;
-  const attendancePercentage = ((attendedDays / totalDays) * 100).toFixed(1);
+  // Dynamic Attendance Summary
+  const { totalDays, attendedDays, absentDays, percentage: attendancePercentage } = getStudentAttendanceSummary();
 
-  // Initialize Theme & load courses
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
-    // Load dynamic registered courses if available
-    const loaded = localStorage.getItem("registered_courses");
-    if (loaded) {
-      try {
-        const parsed = JSON.parse(loaded);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCurrentCoursesCount(parsed.length);
-          if (parsed[0].organizer) {
-            setCurrentFaculty((prev) => ({
-              ...prev,
-              course: parsed[0].name || prev.course,
-              id: parsed[0].organizer || prev.id,
-            }));
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse registered courses", e);
-      }
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+  // Active Faculty In-Charge from first registered course or fallback
+  const firstCourse = registeredCourses[0] || courses[0];
+  const currentFaculty = {
+    name: firstCourse?.instructor || "Dr. Sarah Connor",
+    id: firstCourse?.code || "CS1121",
+    department: firstCourse?.department || "Computer Science & Engineering",
+    course: firstCourse?.name || "AI TECHNOLOGY - FUTURE OF INDUSTRIAL REVOLUTION",
+    email: "sarah.connor@university.edu",
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    router.replace("/login");
+    logout();
   };
+
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
@@ -321,55 +288,55 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* 4 Cards Grid: Total Credits, Redeemed Credits, Available Credits, Current Courses */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Total Credits */}
-              <div className="bg-indigo-600 dark:bg-indigo-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-indigo-600 dark:bg-indigo-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Total Credits</span>
-                <span className="text-base font-extrabold mt-3">24.0 Credits</span>
+                <span className="text-xs font-bold mt-1.5">{totalEarnedCredits.toFixed(1)} Credits</span>
               </div>
 
               {/* Redeemed Credits */}
-              <div className="bg-amber-500 dark:bg-amber-600 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-amber-500 dark:bg-amber-600 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Redeemed Credits</span>
-                <span className="text-base font-extrabold mt-3">18.0 Credits</span>
+                <span className="text-xs font-bold mt-1.5">{redeemedCredits.toFixed(1)} Credits</span>
               </div>
 
               {/* Available / Balance Credits */}
-              <div className="bg-emerald-600 dark:bg-emerald-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-emerald-600 dark:bg-emerald-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Available Credits</span>
-                <span className="text-base font-extrabold mt-3">6.0 Credits</span>
+                <span className="text-xs font-bold mt-1.5">{availableCredits.toFixed(1)} Credits</span>
               </div>
 
               {/* Current Courses */}
-              <div className="bg-purple-600 dark:bg-purple-700 text-white rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-purple-600 dark:bg-purple-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Current Courses</span>
-                <span className="text-base font-extrabold mt-3">{currentCoursesCount} Enrolled</span>
+                <span className="text-xs font-bold mt-1.5">{currentCoursesCount} Enrolled</span>
               </div>
             </div>
 
             {/* Sub-Row: Detailed Points Distribution & Enrolled Courses Quick Status */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Honour Credits</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">16.0 Earned</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{redeemedCredits.toFixed(1)} Earned</span>
                 </div>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400">
-                  Target: 20.0
+                  Target: 6.0
                 </span>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Reward Credits</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">8.0 Earned</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{availableCredits.toFixed(1)} Earned</span>
                 </div>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
                   Activities / Labs
                 </span>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Academic Standing</span>
                   <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">Gold Standing</span>
@@ -383,26 +350,28 @@ export default function StudentDashboardPage() {
             {/* Enrolled Courses Quick Badges Row */}
             <div className="pt-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                Enrolled Course Progress
+                Enrolled Course Progress ({registeredCourses.length})
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Next.js 15 & AI</span>
-                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">80% Done</span>
+              {registeredCourses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                  {registeredCourses.map((c, index) => (
+                    <div
+                      key={c.id}
+                      onClick={() => router.push("/student/my-course")}
+                      className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs hover:border-indigo-300 dark:hover:border-indigo-800 transition cursor-pointer"
+                    >
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]" title={c.name}>
+                        {c.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0 ml-1">
+                        +{c.credits} Cr
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Cybersecurity</span>
-                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">65% Done</span>
-                </div>
-                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">UI/UX Design</span>
-                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">90% Done</span>
-                </div>
-                <div className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">Generative AI</span>
-                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">45% Done</span>
-                </div>
-              </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No registered courses yet. Browse Course Master to register.</p>
+              )}
             </div>
 
             {/* Current Faculty In-Charge Detailed Banner */}

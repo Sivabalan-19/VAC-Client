@@ -1,157 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface CourseItem {
-  sno: string;
-  date: string;
-  name: string;
-  type: string;
-  duration?: string;
-  credits: number;
-  organizer: string;
-  available: number;
-  details?: string;
-}
+import { useStore } from "../../context/StoreContext";
+import { Course } from "../../faculty/data/mockCourses";
 
 export default function StudentCoursePage() {
   const router = useRouter();
-
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
+  const {
+    courses,
+    registeredCourseIds,
+    registerCourse,
+    darkMode,
+    toggleDarkMode,
+    logout,
+  } = useStore();
 
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
 
   // Selected Course details modal state
-  const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   // Pagination State
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Mock Course Data (with Credits)
-  const [courses] = useState<CourseItem[]>([
-    {
-      sno: "01",
-      date: "03/02/2024",
-      name: "Course on Next.js 15 & AI Integration",
-      type: "Technical Skills",
-      duration: "30 Hours",
-      credits: 4.0,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "Hands-on experience with modern Next.js features, Server Actions, React Server Components (RSCs), and integrating Gemini models inside your applications.",
-    },
-    {
-      sno: "02",
-      date: "03/02/2024",
-      name: "Cybersecurity Bootcamp Course: Defensive Practices",
-      type: "Technical Skills",
-      duration: "45 Hours",
-      credits: 3.0,
-      organizer: "abcd/CS1121",
-      available: 40,
-      details: "Learn the fundamentals of penetration testing, incident response, network monitoring, and system hardening techniques.",
-    },
-    {
-      sno: "03",
-      date: "03/02/2024",
-      name: "UI/UX Design Course: Glassmorphism & Figma",
-      type: "Technical Skills",
-      duration: "30 Hours",
-      credits: 4.0,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "A comprehensive deep dive into design systems, grid layouts, auto layout v5 in Figma, accessibility testing, and crafting fluid premium pages.",
-    },
-    {
-      sno: "04",
-      date: "03/02/2024",
-      name: "Generative AI Course: Hackathon and Pitching",
-      type: "Technical Skills",
-      duration: "60 Hours",
-      credits: 4.0,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "Bring your AI-centric ideas to life! Pitch to domain experts, receive mentoring on scaling ML models, and compete for academic credits.",
-    },
-    {
-      sno: "05",
-      date: "05/02/2024",
-      name: "Advanced Data Structures & Algorithms Course",
-      type: "Technical Skills",
-      duration: "45 Hours",
-      credits: 3.0,
-      organizer: "abcd/CS1122",
-      available: 15,
-      details: "Solve complex tree, graph, dynamic programming, and greedy algorithm problems. Ideal for coding interview preparation.",
-    },
-    {
-      sno: "06",
-      date: "07/02/2024",
-      name: "Full Stack Web Development with Go & React",
-      type: "Technical Skills",
-      duration: "45 Hours",
-      credits: 3.0,
-      organizer: "abcd/CS1123",
-      available: 30,
-      details: "Build a highly scalable backend microservice using Golang and hook it up with a responsive React frontend client using Tailwind CSS.",
-    },
-  ]);
-
-  // Initialize Theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
   const handleSignOut = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    router.replace("/login");
+    logout();
   };
 
-  const handleRegisterCourse = (course: CourseItem) => {
-    const existing = localStorage.getItem("registered_courses");
-    const list = existing ? JSON.parse(existing) : [];
-    
-    if (list.some((item: any) => item.sno === course.sno)) {
-      alert(`You are already registered for: ${course.name}`);
-      return;
+  const handleRegister = (course: Course) => {
+    const result = registerCourse(course.id);
+    alert(result.message);
+    if (result.success) {
+      setSelectedCourse(null);
     }
-    
-    const newList = [...list, { ...course, status: "Registered" }];
-    localStorage.setItem("registered_courses", JSON.stringify(newList));
-    alert(`Successfully registered for Course: ${course.name}`);
-    setSelectedCourse(null);
   };
+
+  // Filter out courses that are already registered
+  const availableCourses = courses.filter((c) => !registeredCourseIds.includes(c.id));
 
   // Filter and Sort Logic
-  const filteredCourses = courses.filter((course) => {
+  const filteredCourses = availableCourses.filter((course) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
       course.name.toLowerCase().includes(query) ||
-      course.organizer.toLowerCase().includes(query) ||
+      course.code.toLowerCase().includes(query) ||
+      course.instructor.toLowerCase().includes(query) ||
+      course.department.toLowerCase().includes(query) ||
       course.type.toLowerCase().includes(query)
     );
   });
@@ -162,9 +60,10 @@ export default function StudentCoursePage() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedCourses = filteredCourses.slice(startIndex, startIndex + rowsPerPage);
 
-  useEffect(() => {
+  const handlePageReset = () => {
     setCurrentPage(1);
-  }, [searchQuery, rowsPerPage]);
+  };
+
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
@@ -306,37 +205,44 @@ export default function StudentCoursePage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {paginatedCourses.length > 0 ? (
-                  paginatedCourses.map((row) => (
-                    <tr
-                      key={row.sno}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
-                    >
-                      <td className="py-4 px-5 text-xs font-medium text-slate-400 dark:text-slate-500">{row.sno}</td>
-                      <td className="py-4 px-5 text-xs font-medium text-slate-600 dark:text-slate-400">{row.date}</td>
-                      <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[280px] truncate">
-                        {row.name}
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
-                      <td className="py-4 px-5 text-xs font-bold text-indigo-600 dark:text-indigo-400 text-right">
-                        +{row.credits.toFixed(1)} Credits
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
-                      <td className="py-4 px-5 text-xs">
-                        <span className={`font-semibold ${row.available <= 10 ? "text-amber-600 dark:text-amber-400" : "text-slate-600 dark:text-slate-400"}`}>
-                          {row.available} left
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCourse(row)}
-                          className="h-7 px-3.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer select-none"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  paginatedCourses.map((row, idx) => {
+                    const seatsLeft = Math.max(0, row.maxIntake - row.registeredCount);
+                    return (
+                      <tr
+                        key={row.id}
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
+                      >
+                        <td className="py-4 px-5 text-xs font-medium text-slate-400 dark:text-slate-500">
+                          {String(startIndex + idx + 1).padStart(2, "0")}
+                        </td>
+                        <td className="py-4 px-5 text-xs font-medium text-slate-600 dark:text-slate-400">
+                          {row.startDate?.split(" ")[0] || row.regStartDate}
+                        </td>
+                        <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[280px] truncate">
+                          {row.name}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
+                        <td className="py-4 px-5 text-xs font-bold text-indigo-600 dark:text-indigo-400 text-right">
+                          +{row.credits?.toFixed(1)} Credits
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.instructor}</td>
+                        <td className="py-4 px-5 text-xs">
+                          <span className={`font-semibold ${seatsLeft <= 10 ? "text-amber-600 dark:text-amber-400" : "text-slate-600 dark:text-slate-400"}`}>
+                            {seatsLeft} left
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCourse(row)}
+                            className="h-7 px-3.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer select-none"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-xs font-medium text-slate-400 dark:text-slate-600">
@@ -405,7 +311,7 @@ export default function StudentCoursePage() {
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-                  {selectedCourse.type} • {selectedCourse.duration || "Credit Course"}
+                  {selectedCourse.type} • {selectedCourse.mode}
                 </span>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
                   {selectedCourse.name}
@@ -429,7 +335,7 @@ export default function StudentCoursePage() {
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Start Date</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.date}
+                    {selectedCourse.startDate || selectedCourse.regStartDate}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
@@ -439,17 +345,17 @@ export default function StudentCoursePage() {
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
-                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Organizer / Faculty</span>
+                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Instructor</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.organizer}
+                    {selectedCourse.instructor}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Availability</span>
                   <span className={`block text-xs font-bold mt-0.5 ${
-                    selectedCourse.available <= 10 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
+                    (selectedCourse.maxIntake - selectedCourse.registeredCount) <= 10 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
                   }`}>
-                    {selectedCourse.available} Seats left
+                    {Math.max(0, selectedCourse.maxIntake - selectedCourse.registeredCount)} Seats left
                   </span>
                 </div>
               </div>
@@ -473,7 +379,7 @@ export default function StudentCoursePage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleRegisterCourse(selectedCourse)}
+                onClick={() => handleRegister(selectedCourse)}
                 className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-xs font-semibold transition-all cursor-pointer"
               >
                 Register Course

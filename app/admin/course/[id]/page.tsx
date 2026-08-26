@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar";
-import { INITIAL_COURSES, Course } from "../../../faculty/data/mockCourses";
+import { useStore } from "../../../context/StoreContext";
 
 export default function AdminCourseDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const courseIdParam = params?.id ? Number(params.id) : 1;
 
+  const { courses, updateCourseStatus } = useStore();
+
   // Find course or fallback to course 1
-  const initialCourse = INITIAL_COURSES.find((c) => c.id === courseIdParam) || INITIAL_COURSES[0];
-  const [course, setCourse] = useState<Course>(initialCourse);
+  const course = courses.find((c) => c.id === courseIdParam) || courses[0];
   const [studentSearch, setStudentSearch] = useState("");
   const [statusNotification, setStatusNotification] = useState("");
 
@@ -20,11 +21,7 @@ export default function AdminCourseDetailsPage() {
   const [rejectReasonInput, setRejectReasonInput] = useState(course.rejectionReason || "");
 
   const handleUpdateStatus = (newStatus: string, reason?: string) => {
-    setCourse((prev) => ({
-      ...prev,
-      statusText: newStatus,
-      rejectionReason: reason !== undefined ? reason : prev.rejectionReason,
-    }));
+    updateCourseStatus(course.id, newStatus, reason);
     setStatusNotification(`Course status updated to "${newStatus}"`);
     setTimeout(() => setStatusNotification(""), 4000);
   };
@@ -34,6 +31,7 @@ export default function AdminCourseDetailsPage() {
     handleUpdateStatus("Rejected", rejectReasonInput);
     setShowRejectModal(false);
   };
+
 
   const getStatusBadgeStyle = (statusText: string) => {
     if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {

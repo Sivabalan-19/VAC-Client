@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useStore } from "../../context/StoreContext";
 
 interface AdminSidebarProps {
   activeTab?: string;
@@ -10,36 +11,13 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ activeTab }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [darkMode, setDarkMode] = useState(false);
+  const { user, darkMode, toggleDarkMode, logout } = useStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
   const handleSignOut = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    router.push("/login");
+    logout();
   };
+
 
   const currentPath = activeTab || pathname;
   const isDashboard = currentPath.includes("/admin/dashboard") || currentPath === "/admin";

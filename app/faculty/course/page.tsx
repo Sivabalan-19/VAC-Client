@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FacultySidebar from "../components/FacultySidebar";
-import { INITIAL_COURSES, Course } from "../data/mockCourses";
+import { useStore } from "../../context/StoreContext";
 
 export default function FacultyCourseListPage() {
   const router = useRouter();
-  const [courses] = useState<Course[]>(INITIAL_COURSES);
+  const { courses } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedMode, setSelectedMode] = useState("all");
   const [onlyActiveEvents, setOnlyActiveEvents] = useState(false);
+
 
   // Helper for calendar date badge
   const getCalendarDate = (dateStr: string) => {

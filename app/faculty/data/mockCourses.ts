@@ -24,6 +24,7 @@ export interface Course {
   details: string;
   instructor: string;
   department: string;
+  deptYear?: string;
   maxIntake: number;
   registeredCount: number;
   attendedCount: number;

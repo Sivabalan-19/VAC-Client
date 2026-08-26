@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FacultySidebar from "../../components/FacultySidebar";
-import { INITIAL_COURSES, Course } from "../../data/mockCourses";
+import { useStore } from "../../../context/StoreContext";
 
 interface SessionInfo {
   id: string;
@@ -18,9 +18,16 @@ export default function FacultyCourseDetailsPage() {
   const params = useParams();
   const courseIdParam = params?.id ? Number(params.id) : 1;
 
+  const {
+    courses,
+    sessionAttendance,
+    updateStudentAttendance,
+    markAllPresent: storeMarkAllPresent,
+    getCourseAttendanceMetrics,
+  } = useStore();
+
   // Find course or fallback to course 1
-  const initialCourse = INITIAL_COURSES.find((c) => c.id === courseIdParam) || INITIAL_COURSES[0];
-  const [course] = useState<Course>(initialCourse);
+  const course = courses.find((c) => c.id === courseIdParam) || courses[0];
 
   // Multi-day & Multi-session Configuration (2 Days, 2 Sessions per day = 4 Total Sessions)
   const sessions: SessionInfo[] = [
@@ -33,72 +40,42 @@ export default function FacultyCourseDetailsPage() {
   const [activeSessionId, setActiveSessionId] = useState<string>("d1s1");
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
 
-  // Session Attendance State: Map<sessionId, Map<studentId, AttendanceStatus>>
-  const [attendanceRecords, setAttendanceRecords] = useState<Record<string, Record<string, "Present" | "Absent">>>(() => {
-    const initialRecords: Record<string, Record<string, "Present" | "Absent">> = {};
-    sessions.forEach((s) => {
-      initialRecords[s.id] = {};
-      initialCourse.students.forEach((st) => {
-        initialRecords[s.id][st.id] = st.attendanceStatus === "Present" ? "Present" : "Absent";
-      });
-    });
-    return initialRecords;
-  });
-
   const [studentSearch, setStudentSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "Present" | "Absent">("all");
 
-  // Get current active session attendance list
-  const currentSessionRecords = attendanceRecords[activeSessionId] || {};
+  // Get current active session attendance list from Store
+  const courseSessions = sessionAttendance[course.id] || {};
+  const currentSessionRecords = courseSessions[activeSessionId] || {};
   const currentSessionAttendedCount = Object.values(currentSessionRecords).filter((status) => status === "Present").length;
-  const totalStudentsCount = initialCourse.students.length;
+  const totalStudentsCount = course.students.length;
   const currentSessionRate = totalStudentsCount > 0 ? Math.round((currentSessionAttendedCount / totalStudentsCount) * 100) : 0;
 
-  // Compute Overall Course Attendance Rate across all sessions
-  const totalPossibleCheckins = sessions.length * totalStudentsCount;
-  let totalActualCheckins = 0;
-  sessions.forEach((s) => {
-    const records = attendanceRecords[s.id] || {};
-    totalActualCheckins += Object.values(records).filter((status) => status === "Present").length;
-  });
-  const overallCourseRate = totalPossibleCheckins > 0 ? Math.round((totalActualCheckins / totalPossibleCheckins) * 100) : 0;
+  // Compute Overall Course Attendance Rate across all sessions from Store
+  const { overallRate: overallCourseRate, attendedEnrolled: totalActualCheckins } = getCourseAttendanceMetrics(course.id);
+
 
   // Toggle individual student attendance for active session
   const toggleAttendance = (studentId: string, newStatus: "Present" | "Absent") => {
-    setAttendanceRecords((prev) => ({
-      ...prev,
-      [activeSessionId]: {
-        ...prev[activeSessionId],
-        [studentId]: newStatus,
-      },
-    }));
+    updateStudentAttendance(course.id, activeSessionId, studentId, newStatus);
   };
 
   // Mark all students present for active session
   const markAllPresent = () => {
-    setAttendanceRecords((prev) => {
-      const updatedActiveSession: Record<string, "Present" | "Absent"> = {};
-      initialCourse.students.forEach((st) => {
-        updatedActiveSession[st.id] = "Present";
-      });
-      return {
-        ...prev,
-        [activeSessionId]: updatedActiveSession,
-      };
-    });
+    storeMarkAllPresent(course.id, activeSessionId);
   };
 
   // Filter students for display
-  const filteredStudents = initialCourse.students.filter((st) => {
+  const filteredStudents = course.students.filter((st) => {
     const matchesSearch =
       st.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
       st.rollNo.toLowerCase().includes(studentSearch.toLowerCase()) ||
       st.department.toLowerCase().includes(studentSearch.toLowerCase());
     
-    const currentStatus = currentSessionRecords[st.id] || "Absent";
+    const currentStatus = currentSessionRecords[st.id] || (st.attendanceStatus === "Present" ? "Present" : "Absent");
     const matchesStatus = statusFilter === "all" || currentStatus === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
@@ -261,7 +238,7 @@ export default function FacultyCourseDetailsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {sessions.map((s) => {
                 const isActive = s.id === activeSessionId;
-                const sessionAttended = Object.values(attendanceRecords[s.id] || {}).filter((status) => status === "Present").length;
+                const sessionAttended = Object.values(courseSessions[s.id] || {}).filter((status) => status === "Present").length;
                 const sessionPct = totalStudentsCount > 0 ? Math.round((sessionAttended / totalStudentsCount) * 100) : 0;
 
                 return (
