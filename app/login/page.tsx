@@ -36,7 +36,7 @@ export default function LoginPage() {
       const roleRoutes: Record<Role, string> = {
         student: "/student/dashboard",
         faculty: "/faculty/my-event",
-        admin: "/course-registration",
+        admin: "/admin/dashboard",
       };
 
       if (parsedUser?.isLoggedIn && parsedUser?.role && roleRoutes[parsedUser.role]) {
@@ -86,7 +86,7 @@ export default function LoginPage() {
       admin: {
         email: "admin@example.com",
         password: "admin123",
-        dashboard: "/course-registration",
+        dashboard: "/admin/dashboard",
       },
     };
 

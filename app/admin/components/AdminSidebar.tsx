@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-interface FacultySidebarProps {
+interface AdminSidebarProps {
   activeTab?: string;
 }
 
-export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
+export default function AdminSidebar({ activeTab }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [darkMode, setDarkMode] = useState(false);
@@ -41,28 +41,26 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
     router.push("/login");
   };
 
-  // Determine current active item from route if activeTab not explicitly set
   const currentPath = activeTab || pathname;
-  const isDashboard = currentPath.includes("/faculty/dashboard") || currentPath === "/faculty";
-  const isMyCourse = currentPath === "/faculty/course" || currentPath === "/faculty/my-event" || currentPath.includes("/faculty/course/");
-  const isCreateCourse = currentPath.includes("/faculty/create");
+  const isDashboard = currentPath.includes("/admin/dashboard") || currentPath === "/admin";
+  const isCoursePage = currentPath.includes("/admin/course");
 
   return (
     <>
       {/* Mobile Top Header */}
       <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-            VAC
+          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+            ADM
           </div>
-          <span className="font-bold text-slate-900 dark:text-white tracking-tight">
-            FACULTY <span className="text-indigo-600 dark:text-indigo-400">PORTAL</span>
+          <span className="font-bold text-slate-900 dark:text-white tracking-tight text-sm">
+            ADMIN <span className="text-indigo-600 dark:text-indigo-400">PORTAL</span>
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition"
             aria-label="Toggle Dark Mode"
           >
             {darkMode ? "Light" : "Dark"}
@@ -96,14 +94,14 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
           {/* Logo Brand Header */}
           <div className="flex items-center justify-between mb-8 px-2">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-base shadow-md shadow-indigo-500/20">
-                VAC
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-500/20">
+                ADM
               </div>
               <div>
                 <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
                   VAC <span className="text-indigo-600 dark:text-indigo-400 font-light italic">Platform</span>
                 </h1>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Faculty Portal</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Admin & Dean Office</p>
               </div>
             </div>
           </div>
@@ -113,7 +111,7 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
             {/* Dashboard Link */}
             <button
               onClick={() => {
-                router.push("/faculty/dashboard");
+                router.push("/admin/dashboard");
                 setMobileOpen(false);
               }}
               className={`w-full flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-left ${
@@ -123,19 +121,19 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
               }`}
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
               Dashboard
             </button>
 
-            {/* My Course Link */}
+            {/* Courses Management Link */}
             <button
               onClick={() => {
-                router.push("/faculty/course");
+                router.push("/admin/course");
                 setMobileOpen(false);
               }}
               className={`w-full flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-left ${
-                isMyCourse
+                isCoursePage
                   ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 shadow-sm border border-indigo-100 dark:border-indigo-900/50"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
               }`}
@@ -143,25 +141,7 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              My Course
-            </button>
-
-            {/* Create Course Link */}
-            <button
-              onClick={() => {
-                router.push("/faculty/create");
-                setMobileOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-left ${
-                isCreateCourse
-                  ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 shadow-sm border border-indigo-100 dark:border-indigo-900/50"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
-              }`}
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Create Course
+              Courses Management
             </button>
           </nav>
         </div>
@@ -170,12 +150,12 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
         <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           {/* User Profile Summary */}
           <div className="flex items-center gap-3 px-2 py-1">
-            <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm">
-              FC
+            <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-sm">
+              AD
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">Dr. Sarah Connor</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">sarah.c@univ.edu</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">Dr. Robert Vance</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Dean of Academics</p>
             </div>
           </div>
 

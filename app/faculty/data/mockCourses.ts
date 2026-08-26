@@ -33,6 +33,7 @@ export interface Course {
   endDate: string;      // Event End Date
   location: string;
   credits: number;
+  rejectionReason?: string;
   students: StudentAttendance[];
 }
 
