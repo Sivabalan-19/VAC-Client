@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FacultySidebar from "../components/FacultySidebar";
-import { INITIAL_COURSES, Course } from "../data/mockCourses";
+import { useStore } from "../../context/StoreContext";
 
 export default function FacultyDashboardPage() {
   const router = useRouter();
-  const [courses] = useState<Course[]>(INITIAL_COURSES);
+  const { courses } = useStore();
 
   // Compute Dashboard Metrics
   const totalCourses = courses.length;
@@ -15,6 +14,7 @@ export default function FacultyDashboardPage() {
   const totalAttended = courses.reduce((acc, c) => acc + c.attendedCount, 0);
   const overallAttendancePercentage = totalRegistered > 0 ? Math.round((totalAttended / totalRegistered) * 100) : 0;
   const activeEventsCount = courses.filter((c) => c.statusText.includes("Attendance") || c.statusText.includes("Opened")).length;
+
 
   // Helper function to extract Month and Day for Calendar inspiration badge
   const getCalendarDate = (dateStr: string) => {
@@ -42,6 +42,7 @@ export default function FacultyDashboardPage() {
     }
     return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
   };
+
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">

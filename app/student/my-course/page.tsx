@@ -1,87 +1,43 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-interface CourseItem {
-  sno: string;
-  date: string;
-  name: string;
-  type: string;
-  duration?: string;
-  credits?: number;
-  points?: number;
-  organizer: string;
-  status: string;
-  details?: string;
-}
+import { useRouter } from "next/navigation";
+import { useStore } from "../../context/StoreContext";
+import { Course } from "../../faculty/data/mockCourses";
 
 export default function StudentMyCoursePage() {
   const router = useRouter();
-
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
+  const {
+    courses,
+    registeredCourseIds,
+    cancelRegistration,
+    darkMode,
+    toggleDarkMode,
+    logout,
+  } = useStore();
 
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
 
   // Selected Course details modal state
-  const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
-
-  // Registered Courses State (loaded from localStorage)
-  const [registeredCourses, setRegisteredCourses] = useState<CourseItem[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   // Pagination State
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Load registered courses from localStorage
-  useEffect(() => {
-    const loaded = localStorage.getItem("registered_courses");
-    if (loaded) {
-      try {
-        setRegisteredCourses(JSON.parse(loaded));
-      } catch (e) {
-        console.error("Failed to parse registered courses", e);
-      }
-    }
-  }, []);
-
-  // Initialize Theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
+  const registeredCourses = courses.filter((c) => registeredCourseIds.includes(c.id));
 
   const handleSignOut = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    router.replace("/login");
+    logout();
   };
 
   // Cancel Registration
-  const handleCancelRegistration = (sno: string) => {
+  const handleCancelRegistration = (courseId: number) => {
     if (confirm("Are you sure you want to cancel your registration for this course?")) {
-      const updated = registeredCourses.filter((c) => c.sno !== sno);
-      setRegisteredCourses(updated);
-      localStorage.setItem("registered_courses", JSON.stringify(updated));
+      const result = cancelRegistration(courseId);
+      alert(result.message);
     }
   };
 
@@ -91,7 +47,8 @@ export default function StudentMyCoursePage() {
     const query = searchQuery.toLowerCase();
     return (
       course.name.toLowerCase().includes(query) ||
-      course.organizer.toLowerCase().includes(query) ||
+      course.code.toLowerCase().includes(query) ||
+      course.instructor.toLowerCase().includes(query) ||
       course.type.toLowerCase().includes(query)
     );
   });
@@ -101,6 +58,7 @@ export default function StudentMyCoursePage() {
   const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedCourses = filteredCourses.slice(startIndex, startIndex + rowsPerPage);
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -246,25 +204,29 @@ export default function StudentMyCoursePage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {paginatedCourses.length > 0 ? (
-                  paginatedCourses.map((row) => (
+                  paginatedCourses.map((row, idx) => (
                     <tr
-                      key={row.sno}
+                      key={row.id}
                       className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
                     >
-                      <td className="py-4 px-5 text-xs font-medium text-slate-400 dark:text-slate-500">{row.sno}</td>
-                      <td className="py-4 px-5 text-xs font-medium text-slate-600 dark:text-slate-400">{row.date}</td>
+                      <td className="py-4 px-5 text-xs font-medium text-slate-400 dark:text-slate-500">
+                        {String(startIndex + idx + 1).padStart(2, "0")}
+                      </td>
+                      <td className="py-4 px-5 text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {row.startDate?.split(" ")[0] || row.regStartDate}
+                      </td>
                       <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[280px] truncate">
                         {row.name}
                       </td>
                       <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
                       <td className="py-4 px-5 text-xs font-bold text-indigo-600 dark:text-indigo-400 text-right">
-                        +{((row.credits ?? (row.points ? row.points / 100 : 4.0))).toFixed(1)} Credits
+                        +{row.credits?.toFixed(1)} Credits
                       </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
+                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.instructor}</td>
                       <td className="py-4 px-5 text-xs">
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                          {row.status || "Registered"}
+                          Enrolled
                         </span>
                       </td>
                       <td className="py-4 px-5 text-center">
@@ -278,7 +240,7 @@ export default function StudentMyCoursePage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleCancelRegistration(row.sno)}
+                            onClick={() => handleCancelRegistration(row.id)}
                             className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
                           >
                             Cancel
@@ -382,7 +344,7 @@ export default function StudentMyCoursePage() {
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-                  {selectedCourse.type} • {selectedCourse.duration || "Credit Course"}
+                  {selectedCourse.type} • {selectedCourse.mode}
                 </span>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
                   {selectedCourse.name}
@@ -406,25 +368,25 @@ export default function StudentMyCoursePage() {
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Date</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.date}
+                    {selectedCourse.startDate || selectedCourse.regStartDate}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Academic Credits</span>
                   <span className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    +{((selectedCourse.credits ?? (selectedCourse.points ? selectedCourse.points / 100 : 4.0))).toFixed(1)} Credits
+                    +{selectedCourse.credits.toFixed(1)} Credits
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
-                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Organizer</span>
+                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Instructor</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.organizer}
+                    {selectedCourse.instructor}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Status</span>
                   <span className="block text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    {selectedCourse.status || "Registered"}
+                    Enrolled
                   </span>
                 </div>
               </div>

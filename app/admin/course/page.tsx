@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
-import { INITIAL_COURSES, Course } from "../../faculty/data/mockCourses";
+import { useStore } from "../../context/StoreContext";
 
-export default function AdminCourseListPage() {
+function AdminCourseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTabParam = searchParams.get("tab") || "all";
 
-  const [courses] = useState<Course[]>(INITIAL_COURSES);
+  const { courses } = useStore();
   const [activeTab, setActiveTab] = useState<string>(initialTabParam);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMode, setSelectedMode] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+
+
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
@@ -353,3 +355,12 @@ export default function AdminCourseListPage() {
     </div>
   );
 }
+
+export default function AdminCourseListPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-500">Loading courses...</div>}>
+      <AdminCourseContent />
+    </Suspense>
+  );
+}
+

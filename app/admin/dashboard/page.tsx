@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
-import { INITIAL_COURSES, Course } from "../../faculty/data/mockCourses";
+import { useStore } from "../../context/StoreContext";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
+  const { courses, updateCourseStatus } = useStore();
 
   // Compute Admin Dashboard Metrics
   const totalCourses = courses.length;
@@ -19,14 +18,9 @@ export default function AdminDashboardPage() {
   const uniqueInstructors = Array.from(new Set(courses.map((c) => c.instructor))).length;
 
   const handleApproveCourse = (id: number) => {
-    setCourses((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, statusText: "Attendance Opened", currentStep: 3 }
-          : c
-      )
-    );
+    updateCourseStatus(id, "Attendance Opened");
   };
+
 
   const getStatusBadge = (statusText: string) => {
     if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {

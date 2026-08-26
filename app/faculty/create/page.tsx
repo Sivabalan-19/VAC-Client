@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FacultySidebar from "../components/FacultySidebar";
+import { useStore } from "../../context/StoreContext";
 
 export default function FacultyCreateCoursePage() {
   const router = useRouter();
+  const { createCourse } = useStore();
 
   // Wizard Step State: 1 = Basic Info, 2 = Dates & Schedule, 3 = Faculty & Overview
   const [currentStep, setCurrentStep] = useState(1);
@@ -13,37 +15,63 @@ export default function FacultyCreateCoursePage() {
   // Form State
   const [courseName, setCourseName] = useState("");
   const [courseCode, setCourseCode] = useState("");
-  const [courseType, setCourseType] = useState("");
-  const [courseCategory, setCourseCategory] = useState("");
+  const [courseType, setCourseType] = useState("Technical Skills");
+  const [courseCategory, setCourseCategory] = useState("Information Technology");
   
-  const [instructor, setInstructor] = useState("");
-  const [department, setDepartment] = useState("");
-  const [deptYear, setDeptYear] = useState("");
+  const [instructor, setInstructor] = useState("Dr. Sarah Connor");
+  const [department, setDepartment] = useState("Computer Science & Engineering");
+  const [deptYear, setDeptYear] = useState("3rd Year");
 
-  const [courseMode, setCourseMode] = useState("online");
+  const [courseMode, setCourseMode] = useState("Offline");
   const [creditCategory, setCreditCategory] = useState("vac");
   const [credits, setCredits] = useState("2");
-  const [maxIntake, setMaxIntake] = useState("");
+  const [maxIntake, setMaxIntake] = useState("60");
 
   // Registration Dates
-  const [regStartDate, setRegStartDate] = useState("");
-  const [regEndDate, setRegEndDate] = useState("");
+  const [regStartDate, setRegStartDate] = useState("2026-08-20");
+  const [regEndDate, setRegEndDate] = useState("2026-08-25");
 
   // Event Schedule Dates
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState("2026-08-28 09:00:00");
+  const [endDate, setEndDate] = useState("2026-08-29 17:00:00");
   const [eventDays, setEventDays] = useState("2");
   const [sessionsPerDay, setSessionsPerDay] = useState("2");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("Lab 3, CS Block");
 
   const [selectedImage, setSelectedImage] = useState("https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop");
   const [courseDetails, setCourseDetails] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("New Value Added Course proposal submitted successfully!");
+    if (!courseName.trim()) {
+      alert("Please provide a course title.");
+      return;
+    }
+
+    createCourse({
+      name: courseName,
+      code: courseCode || `CS${Math.floor(1000 + Math.random() * 9000)}`,
+      type: courseType || "Technical Skills",
+      category: courseCategory || "Information Technology",
+      instructor: instructor || "Dr. Sarah Connor",
+      department: department || "Computer Science",
+      deptYear: deptYear || "3rd Year",
+      mode: (courseMode as any) || "Offline",
+      credits: Number(credits) || 2,
+      maxIntake: Number(maxIntake) || 60,
+      regStartDate: regStartDate || "2026-08-20",
+      regEndDate: regEndDate || "2026-08-25",
+      startDate: startDate || "2026-08-28 09:00:00",
+      endDate: endDate || "2026-08-29 17:00:00",
+      location: location || "Campus Lab",
+      imageUrl: selectedImage,
+      details: courseDetails || "Comprehensive value-added course designed to impart practical skills and industry certifications.",
+    });
+
+    alert("New Value Added Course proposal created and submitted successfully!");
     router.push("/faculty/course");
   };
+
 
   const imagePresets = [
     { label: "AI & Data Science", url: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop" },
