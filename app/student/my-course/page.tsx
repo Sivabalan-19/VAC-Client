@@ -71,7 +71,9 @@ export default function StudentMyCoursePage() {
   };
 
   const handleSignOut = () => {
-    router.push("/login");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
+    router.replace("/login");
   };
 
   // Cancel Registration

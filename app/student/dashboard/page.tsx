@@ -33,7 +33,9 @@ export default function StudentDashboardPage() {
   };
 
   const handleSignOut = () => {
-    router.push("/login");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
+    router.replace("/login");
   };
 
   // Detailed points split up list (replacing event terminology with course)

@@ -126,7 +126,9 @@ export default function StudentCoursePage() {
   };
 
   const handleSignOut = () => {
-    router.push("/login");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
+    router.replace("/login");
   };
 
   const handleRegisterCourse = (course: CourseItem) => {

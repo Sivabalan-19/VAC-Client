@@ -2,13 +2,19 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+type Role = "student" | "faculty" | "admin";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -19,7 +25,25 @@ export default function LoginPage() {
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, []);
+
+    const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser) as {
+        role?: Role;
+        isLoggedIn?: boolean;
+      };
+
+      const roleRoutes: Record<Role, string> = {
+        student: "/student/dashboard",
+        faculty: "/faculty/my-event",
+        admin: "/course-registration",
+      };
+
+      if (parsedUser?.isLoggedIn && parsedUser?.role && roleRoutes[parsedUser.role]) {
+        router.replace(roleRoutes[parsedUser.role]);
+      }
+    }
+  }, [router]);
 
   const toggleDarkMode = () => {
     const nextDark = !darkMode;
@@ -32,10 +56,69 @@ export default function LoginPage() {
     }
   };
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signing in with:", { email, password, keepLoggedIn });
-    // In a real application, you would invoke the login logic/API call here.
+
+    setError("");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter email and password.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate API request
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Demo users mapped to existing routes
+    const users: Record<Role, { email: string; password: string; dashboard: string }> = {
+      student: {
+        email: "student@example.com",
+        password: "student123",
+        dashboard: "/student/dashboard",
+      },
+      faculty: {
+        email: "faculty@example.com",
+        password: "faculty123",
+        dashboard: "/faculty/my-event",
+      },
+      admin: {
+        email: "admin@example.com",
+        password: "admin123",
+        dashboard: "/course-registration",
+      },
+    };
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    const matchedRole = (Object.keys(users) as Role[]).find((userRole) => {
+      const user = users[userRole];
+      return normalizedEmail === user.email && normalizedPassword === user.password;
+    });
+
+    if (matchedRole) {
+      const user = users[matchedRole];
+      const loginData = JSON.stringify({
+        email: normalizedEmail,
+        role: matchedRole,
+        isLoggedIn: true,
+      });
+
+      if (keepLoggedIn) {
+        localStorage.setItem("user", loginData);
+      } else {
+        sessionStorage.setItem("user", loginData);
+      }
+
+      // Redirect according to role
+      router.push(user.dashboard);
+    } else {
+      setError("Invalid email or password.");
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -153,10 +236,15 @@ export default function LoginPage() {
             {/* Sign In Button */}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full h-[54px] rounded-[16px] bg-[#4318ff] hover:bg-[#3311db] text-white text-base font-bold shadow-lg shadow-[#4318ff]/15 hover:shadow-xl hover:shadow-[#4318ff]/25 transition-all duration-200 active:scale-[0.99] cursor-pointer mt-2"
             >
-              Sign In
+              {isLoading ? "Signing in..." : "Sign In"}
             </button>
+
+            {error ? (
+              <p className="text-sm font-medium text-rose-500">{error}</p>
+            ) : null}
 
             {/* Not Registered Line */}
             <div className="text-sm text-[#1b2559] dark:text-white pt-1">
