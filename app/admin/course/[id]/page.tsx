@@ -62,7 +62,7 @@ export default function AdminCourseDetailsPage() {
       <AdminSidebar activeTab={`/admin/course/${course.id}`} />
 
       {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-6">
+      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-6">
         {/* TOP BANNER & BACK BUTTON */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -76,7 +76,8 @@ export default function AdminCourseDetailsPage() {
               <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                 {course.mode}
               </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusBadgeStyle(course.statusText)}`}>
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
+                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") || course.statusText.includes("Approved") ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : course.statusText.includes("Reject") ? "bg-rose-500" : "bg-amber-500"}`} />
                 {course.statusText}
               </span>
             </div>
@@ -241,8 +242,8 @@ export default function AdminCourseDetailsPage() {
                 <button
                   onClick={() => handleUpdateStatus("Attendance Opened")}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") || course.statusText.includes("Approved")
-                      ? "bg-emerald-600 text-white shadow-md ring-2 ring-emerald-600/30"
-                      : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200/60 dark:border-emerald-800/60"
+                    ? "bg-emerald-600 text-white shadow-md ring-2 ring-emerald-600/30"
+                    : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200/60 dark:border-emerald-800/60"
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -258,8 +259,8 @@ export default function AdminCourseDetailsPage() {
                 <button
                   onClick={() => setShowRejectModal(true)}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${course.statusText.includes("Reject")
-                      ? "bg-rose-600 text-white shadow-md ring-2 ring-rose-600/30"
-                      : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 border border-rose-200/60 dark:border-rose-800/60"
+                    ? "bg-rose-600 text-white shadow-md ring-2 ring-rose-600/30"
+                    : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 border border-rose-200/60 dark:border-rose-800/60"
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -275,8 +276,8 @@ export default function AdminCourseDetailsPage() {
                 <button
                   onClick={() => handleUpdateStatus("Approval Pending...")}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${course.statusText.includes("Pending")
-                      ? "bg-amber-600 text-white shadow-md ring-2 ring-amber-600/30"
-                      : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 border border-amber-200/60 dark:border-amber-800/60"
+                    ? "bg-amber-600 text-white shadow-md ring-2 ring-amber-600/30"
+                    : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 border border-amber-200/60 dark:border-amber-800/60"
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -386,8 +387,8 @@ export default function AdminCourseDetailsPage() {
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap shadow-xs border ${student.attendanceStatus === "Present"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
-                              : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
+                            : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
                             }`}
                         >
                           <span

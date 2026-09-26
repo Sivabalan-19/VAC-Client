@@ -10,13 +10,15 @@ function AdminCourseContent() {
   const searchParams = useSearchParams();
   const initialTabParam = searchParams.get("tab") || "all";
 
-  const { courses } = useStore();
+  const { courses, darkMode } = useStore();
   const [activeTab, setActiveTab] = useState<string>(initialTabParam);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMode, setSelectedMode] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
@@ -44,12 +46,12 @@ function AdminCourseContent() {
   // Helper for status badge color
   const getStatusBadgeStyle = (statusText: string) => {
     if (statusText.includes("Opened") || statusText.includes("Attendance")) {
-      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800";
+      return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60";
     }
     if (statusText.includes("Completed")) {
-      return "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800";
+      return "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60";
     }
-    return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
+    return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60";
   };
 
   // Tab count metrics
@@ -60,7 +62,6 @@ function AdminCourseContent() {
 
   // Filter Logic
   const filteredCourses = courses.filter((course) => {
-    // 1. Tab Filter
     let matchesTab = true;
     if (activeTab === "active") {
       matchesTab = course.statusText.includes("Opened") || course.statusText.includes("Attendance");
@@ -70,7 +71,6 @@ function AdminCourseContent() {
       matchesTab = course.statusText.includes("Pending");
     }
 
-    // 2. Search Query
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       course.name.toLowerCase().includes(query) ||
@@ -79,11 +79,9 @@ function AdminCourseContent() {
       course.department.toLowerCase().includes(query) ||
       course.category.toLowerCase().includes(query);
 
-    // 3. Mode Filter
     const matchesMode =
       selectedMode === "all" || course.mode.toLowerCase() === selectedMode.toLowerCase();
 
-    // 4. Category Filter
     const matchesCategory =
       selectedCategory === "all" || course.category.toLowerCase().includes(selectedCategory.toLowerCase());
 
@@ -96,12 +94,17 @@ function AdminCourseContent() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. UNIFIED ADMIN SIDEBAR */}
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      {/* 1. UNIFIED ADMIN SIDEBAR & HEADER */}
       <AdminSidebar activeTab="/admin/course" />
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-6">
+      {/* 2. MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -117,7 +120,7 @@ function AdminCourseContent() {
           </div>
         </div>
 
-        {/* TAB FILTER CONTROL BAR (Active, Completed, Pending, All) */}
+        {/* TAB FILTER CONTROL BAR (Vibrant Indigo Active Tab instead of Pitch Black) */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 shadow-sm flex flex-wrap gap-2">
           {[
             { id: "all", label: "All Courses", count: countAll, badgeClass: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" },
@@ -130,17 +133,19 @@ function AdminCourseContent() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${isActive
-                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md scale-[1.01]"
+                className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
+                  isActive
+                    ? "bg-indigo-600 text-white shadow-md hover:bg-indigo-700"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  }`}
+                }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isActive
-                      ? "bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900"
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    isActive
+                      ? "bg-white/25 text-white"
                       : tab.badgeClass
-                    }`}
+                  }`}
                 >
                   {tab.count}
                 </span>
@@ -182,7 +187,7 @@ function AdminCourseContent() {
 
             {/* Results count badge */}
             <div className="text-xs text-slate-500 dark:text-slate-400 font-medium self-end md:self-auto">
-              Showing <span className="font-bold text-slate-900 dark:text-white">{filteredCourses.length}</span> of {courses.length} courses
+              Showing <span className="font-bold text-indigo-600 dark:text-indigo-400">{filteredCourses.length}</span> of {courses.length} courses
             </div>
           </div>
 
@@ -248,7 +253,7 @@ function AdminCourseContent() {
                 setSelectedCategory("all");
                 handleTabChange("all");
               }}
-              className="mt-4 px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold hover:bg-slate-800 transition"
+              className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition"
             >
               Show All Courses
             </button>
@@ -279,9 +284,9 @@ function AdminCourseContent() {
                       </span>
                     </div>
 
-                    {/* Top Right: Tear-off Date Leaf Badge */}
+                    {/* Top Right: Date Leaf Badge */}
                     <div className="absolute top-3 right-3 z-10 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-lg border border-slate-200/80 dark:border-slate-800 text-center w-12 flex flex-col items-center">
-                      <div className="bg-rose-600 text-[9px] font-bold tracking-wider uppercase text-white w-full py-0.5">
+                      <div className="bg-indigo-600 text-[9px] font-bold tracking-wider uppercase text-white w-full py-0.5">
                         {calDate.month}
                       </div>
                       <div className="text-slate-900 dark:text-white font-extrabold text-sm py-1 leading-snug">
@@ -291,7 +296,7 @@ function AdminCourseContent() {
 
                     {/* Bottom Mode Tag */}
                     <div className="absolute bottom-3 left-3">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-900/80 text-white backdrop-blur-sm">
+                      <span className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-indigo-950/80 text-white backdrop-blur-sm">
                         {course.mode} • {course.credits} Credits
                       </span>
                     </div>
@@ -301,7 +306,7 @@ function AdminCourseContent() {
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
                           {course.code}
                         </span>
                         <span className="text-[11px] text-slate-400">•</span>
@@ -336,7 +341,8 @@ function AdminCourseContent() {
 
                     {/* Card Footer: Status Badge & Open Details Link */}
                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${getStatusBadgeStyle(course.statusText)}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : "bg-amber-500"}`} />
                         {course.statusText}
                       </span>
                       <span className="text-indigo-600 dark:text-indigo-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
@@ -351,6 +357,7 @@ function AdminCourseContent() {
         )}
       </main>
     </div>
+    </div>
   );
 }
 
@@ -361,4 +368,3 @@ export default function AdminCourseListPage() {
     </Suspense>
   );
 }
-

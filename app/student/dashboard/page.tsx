@@ -2,39 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "../../context/StoreContext";
+import StudentSidebar from "../components/StudentSidebar";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
+  const { darkMode } = useStore();
 
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
-
-  // Initialize Theme
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
+    if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
-  const handleSignOut = () => {
-    router.push("/login");
-  };
+  }, [darkMode]);
 
   const completedCourses = [
     { name: "Next.js 15 & AI Integration", type: "Technical Skills", mode: "Online", credit: 4, completedOn: "15 Mar 2024" },
@@ -51,106 +32,94 @@ export default function StudentDashboardPage() {
   const averageCreditEarned = 12;
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. SIDEBAR */}
-      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 h-screen sticky top-0 transition-colors duration-300 z-10">
-        <div>
-          {/* Logo / Title */}
-          <div className="mb-8 px-2">
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              REWARD <span className="font-light text-indigo-600 dark:text-indigo-400 italic">POINTS</span>
-            </h1>
-          </div>
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      <StudentSidebar activeTab="/student/dashboard" />
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            <a
-              onClick={() => router.push("/student/dashboard")}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 text-sm font-semibold transition-all duration-200 cursor-pointer"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Dashboard
-            </a>
+      {/* MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
 
-            <a
-              onClick={() => router.push("/student/course-complete")}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              Course Complete
-            </a>
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
 
-            {/* Course Register Menu */}
-            <div className="space-y-1 pt-1">
-              <div className="flex items-center gap-3 py-2 px-3 text-slate-900 dark:text-white text-sm font-bold">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Course Register
+            {/* Bottom Card: Course Completion Summary */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm transition-colors duration-300">
+              <div className="flex items-center justify-between gap-3 mb-5">
+                <div className="flex items-center gap-2.5">
+                  <svg className="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Course Completion Summary
+                  </h3>
+                </div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">2023–2024</span>
               </div>
-              <div className="flex flex-col space-y-0.5 pl-4">
-                <a
-                  onClick={() => router.push("/student/course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-                >
-                  Course Master
-                </a>
-                <a
-                  onClick={() => router.push("/student/my-course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-                >
-                  My Courses
-                </a>
+
+              {/* Academic summary cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completed Courses</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{completedCourses.length}</p>
+                    <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Credits Earned</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{totalCredits}</p>
+                    <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Year Average</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#fb923c]">{yearAverage}<span className="text-xl md:text-2xl font-semibold opacity-60">/10</span></p>
+                    <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#fb923c] flex items-center justify-center shrink-0">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completion Rate</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{completionRate}%</p>
+                    <div className="w-12 h-12 rounded-2xl bg-[#fee2e2] dark:bg-red-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Completion Notes */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 border-t border-slate-100 dark:border-slate-800 pt-5">
+                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400 border-b md:border-b-0 border-slate-100 dark:border-slate-800">
+                  <span>Latest completed course</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">15 Mar 2024</span>
+                </div>
+                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400">
+                  <span>Learning mode split</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{onlineCourses} online / {offlineCourses} offline</span>
+                </div>
               </div>
             </div>
-          </nav>
-        </div>
-
-        {/* Logout Button */}
-        <div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-sm font-semibold transition-all duration-200 text-left cursor-pointer"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign-Out
-          </button>
-        </div>
-      </aside>
-
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-6 md:p-8 transition-colors duration-300 overflow-y-auto h-screen">
-        {/* Header Bar */}
-        <header className="flex justify-between items-center w-full mb-6">
-          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Dashboard
-          </div>
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full shadow-sm cursor-pointer transition-colors"
-            aria-label="Toggle dark theme"
-          >
-            {darkMode ? (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 18.36l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
-            )}
-          </button>
-        </header>
-
         {/* Dashboard Grid Content */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
@@ -270,56 +239,6 @@ export default function StudentDashboardPage() {
               </div>
 
             </div>
-
-            {/* Bottom Card: Course Completion Summary */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm transition-colors duration-300">
-              <div className="flex items-center justify-between gap-3 mb-5">
-                <div className="flex items-center gap-2.5">
-                  <svg className="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Course Completion Summary
-                  </h3>
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">2023–2024</span>
-              </div>
-
-              {/* Academic summary cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-indigo-500 rounded-lg p-4 flex flex-col justify-between">
-                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Completed Courses</span>
-                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{completedCourses.length}</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-emerald-500 rounded-lg p-4 flex flex-col justify-between">
-                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Credits Earned</span>
-                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{totalCredits}</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-amber-500 rounded-lg p-4 flex flex-col justify-between">
-                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Year Average</span>
-                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{yearAverage}<span className="text-sm font-normal text-slate-400">/10</span></span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-sky-500 rounded-lg p-4 flex flex-col justify-between">
-                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Completion Rate</span>
-                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{completionRate}%</span>
-                </div>
-              </div>
-
-              {/* Completion Notes */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 border-t border-slate-100 dark:border-slate-800 pt-5">
-                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400 border-b md:border-b-0 border-slate-100 dark:border-slate-800">
-                  <span>Latest completed course</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">15 Mar 2024</span>
-                </div>
-                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400">
-                  <span>Learning mode split</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{onlineCourses} online / {offlineCourses} offline</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Right Column: Detailed Split Table */}
@@ -363,6 +282,7 @@ export default function StudentDashboardPage() {
 
         </div>
       </main>
+      </div>
     </div>
   );
 }

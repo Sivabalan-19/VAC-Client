@@ -28,7 +28,7 @@ export default function FacultyMyEventPage() {
       <FacultySidebar activeTab="/faculty/courses" />
 
       {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* HEADER WITH CREATE COURSE BUTTON AT TOP RIGHT */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>

@@ -68,7 +68,7 @@ export default function FacultyCourseListPage() {
       <FacultySidebar activeTab="/faculty/course" />
 
       {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* HEADER WITH CREATE COURSE BUTTON AT TOP RIGHT */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -275,7 +275,8 @@ export default function FacultyCourseListPage() {
 
                     {/* Tightened Card Footer: Highlighted Event Status Badge & View Details Link */}
                     <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${getStatusBadgeStyle(course.statusText)}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : "bg-amber-500"}`} />
                         {course.statusText}
                       </span>
                       <span className="text-indigo-600 dark:text-indigo-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">

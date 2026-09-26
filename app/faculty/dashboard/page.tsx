@@ -50,7 +50,7 @@ export default function FacultyDashboardPage() {
       <FacultySidebar activeTab="/faculty/dashboard" />
 
       {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* Top Header Banner */}
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -64,59 +64,59 @@ export default function FacultyDashboardPage() {
         {/* METRICS STAT CARDS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Card 1: Total Courses */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Courses</span>
-              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 hover:shadow-md transition">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Total Courses</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{totalCourses}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalCourses}</p>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-semibold">Active & Proposed VACs</p>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Active & Proposed VACs</span>
           </div>
 
           {/* Card 2: Registered Students */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Registered Students</span>
-              <div className="p-2.5 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 hover:shadow-md transition">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Registered Students</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{totalRegistered}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalRegistered}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Across all course batches</p>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Across all course batches</span>
           </div>
 
           {/* Card 3: Total Attended */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Attended</span>
-              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 hover:shadow-md transition">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Total Attended</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#fb923c]">{totalAttended}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#fb923c] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalAttended}</p>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-bold">{overallAttendancePercentage}% Attendance Rate</p>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">{overallAttendancePercentage}% Attendance Rate</span>
           </div>
 
           {/* Card 4: Active Events */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Active Sessions</span>
-              <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 hover:shadow-md transition">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Active Sessions</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#dc2626] dark:text-[#f87171]">{activeEventsCount}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#fee2e2] dark:bg-red-950/70 text-[#dc2626] dark:text-[#f87171] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{activeEventsCount}</p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold">Attendance Marking Open</p>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Attendance Marking Open</span>
           </div>
         </div>
 
@@ -200,7 +200,8 @@ export default function FacultyDashboardPage() {
 
                     {/* Tightened Card Footer: Highlighted Event Status Badge & View Details Link */}
                     <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${getStatusBadgeStyle(course.statusText)}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : "bg-amber-500"}`} />
                         {course.statusText}
                       </span>
                       <span className="text-indigo-600 dark:text-indigo-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1">

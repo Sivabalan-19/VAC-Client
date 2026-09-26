@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "../../context/StoreContext";
+import StudentSidebar from "../components/StudentSidebar";
 
 interface CompletedCourse {
   name: string;
@@ -49,21 +51,12 @@ const completedCourses: CompletedCourse[] = [
 
 export default function CourseCompletePage() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const isDark = localStorage.getItem("theme") === "true";
-    setDarkMode(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    document.documentElement.classList.toggle("dark", nextDark);
-  };
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   const totalCredits = completedCourses.reduce((total, course) => total + course.credit, 0);
   const onlineCount = completedCourses.filter((course) => course.mode === "Online").length;
@@ -74,61 +67,59 @@ export default function CourseCompletePage() {
   });
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 h-screen sticky top-0">
-        <div>
-          <div className="mb-8 px-2">
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              VAC <span className="font-light text-indigo-600 dark:text-indigo-400 italic">PORTAL</span>
-            </h1>
-          </div>
-          <nav className="space-y-1">
-            <button onClick={() => router.push("/student/dashboard")} className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium text-left cursor-pointer">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z" /></svg>
-              Dashboard
-            </button>
-            <button onClick={() => router.push("/student/course-complete")} className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 text-sm font-semibold text-left cursor-pointer">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-              Course Complete
-            </button>
-            <div className="pt-3 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Course Register</div>
-            <button onClick={() => router.push("/student/course")} className="w-full flex items-center gap-3 py-2.5 px-7 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium text-left cursor-pointer">
-              Course Master
-            </button>
-            <button onClick={() => router.push("/student/my-course")} className="w-full flex items-center gap-3 py-2.5 px-7 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium text-left cursor-pointer">
-              My Courses
-            </button>
-          </nav>
-        </div>
-        <button onClick={() => router.push("/login")} className="w-full py-2.5 px-3 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-sm font-semibold text-left cursor-pointer">
-          Sign-Out
-        </button>
-      </aside>
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      <StudentSidebar activeTab="/student/course-complete" />
 
-      <main className="flex-1 p-5 md:p-8">
-        <header className="flex items-start justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">Student Portal</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Course Complete</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">A record of your completed learning journey.</p>
-          </div>
-          <button onClick={toggleDarkMode} className="h-9 w-9 flex items-center justify-center text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer transition-colors" aria-label="Toggle dark theme">
-            {darkMode ? <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path strokeLinecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg> : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.75 15.1A9.5 9.5 0 0 1 8.9 2.25 9.5 9.5 0 1 0 21.75 15.1Z" /></svg>}
-          </button>
-        </header>
+      {/* MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+          <header className="flex items-start justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">Student Portal</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Course Complete</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">A record of your completed learning journey.</p>
+            </div>
+          </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-indigo-500 rounded-xl p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Completed Courses</span>
-            <strong className="block mt-3 text-3xl text-slate-900 dark:text-white">{completedCourses.length}</strong>
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completed Courses</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{completedCourses.length}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 rounded-xl p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Credits Earned</span>
-            <strong className="block mt-3 text-3xl text-slate-900 dark:text-white">{totalCredits}</strong>
+
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Credits Earned</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{totalCredits}</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 rounded-xl p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Completion Rate</span>
-            <strong className="block mt-3 text-3xl text-slate-900 dark:text-white">100%</strong>
+
+          <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completion Rate</span>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">100%</p>
+              <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -194,7 +185,8 @@ export default function CourseCompletePage() {
             </table>
           </div>
         </section>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
