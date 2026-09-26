@@ -72,7 +72,7 @@ export default function AdminCourseDetailsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2 text-xs font-semibold">
-                <span className="font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-800">
+                <span className="font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-800">
                   {course.code}
                 </span>
                 <span className="text-slate-500 dark:text-slate-400">
@@ -138,21 +138,21 @@ export default function AdminCourseDetailsPage() {
             {/* LEFT: FACULTY INFORMATION & COURSE OVERVIEW */}
             <div className="lg:col-span-2 space-y-6">
               {/* FACULTY DETAILS CARD */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                    <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     Faculty & Instructor Information
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                     Assigned Lead
                   </span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-xl flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-xl flex items-center justify-center">
                     {course.instructor.charAt(0)}
                   </div>
 
@@ -160,7 +160,7 @@ export default function AdminCourseDetailsPage() {
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                       {course.instructor}
                     </h3>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold">
                       {course.department}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -192,7 +192,7 @@ export default function AdminCourseDetailsPage() {
               </div>
 
               {/* COURSE DESCRIPTION & DETAILS CARD */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-6">
+              <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-6">
                 <div>
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Course Description & Syllabus</h2>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -203,7 +203,7 @@ export default function AdminCourseDetailsPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
                   <div>
                     <span className="text-slate-400 font-medium block">Registration Dates</span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block">
+                    <span className="font-bold text-blue-600 dark:text-blue-400 mt-0.5 block">
                       {course.regStartDate} to {course.regEndDate}
                     </span>
                   </div>
@@ -234,7 +234,7 @@ export default function AdminCourseDetailsPage() {
             {/* RIGHT: ADMIN CONTROLS & CAPACITY METRICS */}
             <div className="space-y-6">
               {/* ADMIN STATUS CONTROLS */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Admin Governance Controls
                 </h2>
@@ -299,14 +299,14 @@ export default function AdminCourseDetailsPage() {
               </div>
 
               {/* ENROLLMENT & ATTENDANCE SUMMARY */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm space-y-4">
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Enrollment Capacity
                 </h2>
 
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Registered Students</p>
-                  <p className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
+                  <p className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">
                     {course.registeredCount} / {course.maxIntake}
                   </p>
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
@@ -315,7 +315,7 @@ export default function AdminCourseDetailsPage() {
 
                   <div className="mt-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${Math.round((course.registeredCount / course.maxIntake) * 100)}%` }}
                     />
                   </div>
@@ -325,7 +325,7 @@ export default function AdminCourseDetailsPage() {
           </div>
 
           {/* REGISTERED STUDENTS ROSTER TABLE */}
-          <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Registered Student Roster</h2>
@@ -338,7 +338,7 @@ export default function AdminCourseDetailsPage() {
                   placeholder="Search student or roll..."
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-900/30 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <svg
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
@@ -352,9 +352,9 @@ export default function AdminCourseDetailsPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto border border-indigo-100 dark:border-indigo-900/50 rounded-lg">
+            <div className="overflow-x-auto border border-blue-100 dark:border-blue-900/50 rounded-lg">
               <table className="w-full text-left text-[13px]">
-                <thead className="bg-indigo-50/40 dark:bg-indigo-900/20 text-slate-700 dark:text-slate-300 capitalize tracking-wide font-bold border-b border-indigo-100 dark:border-indigo-900/50">
+                <thead className="bg-blue-50/40 dark:bg-blue-900/20 text-slate-700 dark:text-slate-300 capitalize tracking-wide font-bold border-b border-blue-100 dark:border-blue-900/50">
                   <tr>
                     <th className="py-3 px-4">Student Name</th>
                     <th className="py-3 px-4">Roll Number</th>
@@ -447,14 +447,14 @@ export default function AdminCourseDetailsPage() {
                     value={rejectReasonInput}
                     onChange={(e) => setRejectReasonInput(e.target.value)}
                     placeholder="E.g., Syllabus does not meet institutional credit requirements. Module 3 requires additional practical hours..."
-                    className="w-full p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition"
+                    className="w-full p-3 rounded-xl border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition"
                   />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     onClick={() => setShowRejectModal(false)}
-                    className="px-4 py-2 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                   >
                     Cancel
                   </button>

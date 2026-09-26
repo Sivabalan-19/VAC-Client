@@ -45,11 +45,11 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
             onClick={() => router.push("/faculty/dashboard")}
             className="flex items-center gap-2.5 cursor-pointer select-none"
           >
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
               &lt;/&gt;
             </div>
             <div>
-              <span className="font-heading font-extrabold text-lg text-indigo-600 dark:text-indigo-400 tracking-tight leading-none block">
+              <span className="font-heading font-extrabold text-lg text-blue-600 dark:text-blue-400 tracking-tight leading-none block">
                 VAC <span className="text-slate-800 dark:text-white font-bold">Portal</span>
               </span>
               <span className="text-[10px] text-slate-400 font-medium leading-none block">Faculty Portal</span>
@@ -77,7 +77,7 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
           </button>
 
           {/* Avatar Circle */}
-          <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-heading font-bold text-xs flex items-center justify-center shadow-xs cursor-pointer select-none">
+          <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-heading font-bold text-xs flex items-center justify-center shadow-xs cursor-pointer select-none">
             {userInitials}
           </div>
         </div>
@@ -93,9 +93,8 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
 
       {/* 2. LEFT SIDEBAR RAIL (Below top header matching screenshot design) */}
       <aside
-        className={`fixed top-16 left-0 z-30 h-[calc(100vh-4rem)] w-64 bg-[#f8fafc] dark:bg-slate-950 border-r border-slate-200/80 dark:border-slate-800 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed top-16 left-0 z-30 h-[calc(100vh-4rem)] w-64 bg-[#f8fafc] dark:bg-slate-950 border-r border-slate-200/80 dark:border-slate-800 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         <div className="space-y-4 pt-2">
           <nav className="space-y-1">
@@ -105,11 +104,10 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
                 router.push("/faculty/dashboard");
                 setMobileOpen(false);
               }}
-              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${
-                isDashboard
-                  ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-indigo-600 after:rounded-l-md"
+              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${isDashboard
+                  ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-blue-600 after:rounded-l-md"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/50"
-              }`}
+                }`}
             >
               <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -123,11 +121,10 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
                 router.push("/faculty/course");
                 setMobileOpen(false);
               }}
-              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${
-                isMyCourse
-                  ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-indigo-600 after:rounded-l-md"
+              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${isMyCourse
+                  ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-blue-600 after:rounded-l-md"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/50"
-              }`}
+                }`}
             >
               <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -141,11 +138,10 @@ export default function FacultySidebar({ activeTab }: FacultySidebarProps) {
                 router.push("/faculty/create");
                 setMobileOpen(false);
               }}
-              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${
-                isCreateCourse
-                  ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-indigo-600 after:rounded-l-md"
+              className={`w-full relative flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-heading font-semibold transition-all duration-200 text-left ${isCreateCourse
+                  ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-2xs font-bold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-6 after:bg-blue-600 after:rounded-l-md"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/50"
-              }`}
+                }`}
             >
               <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />

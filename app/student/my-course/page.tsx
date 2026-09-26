@@ -116,205 +116,205 @@ export default function StudentMyCoursePage() {
             </div>
           </header>
 
-        {/* 3. MAIN TABLE CARD */}
-        <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
-          {/* Filters Bar */}
-          <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              My Courses
-            </h2>
+          {/* 3. MAIN TABLE CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
+            {/* Filters Bar */}
+            <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                My Courses
+              </h2>
 
-            <div className="flex items-center gap-3">
-              {/* Search Bar */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search courses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-52 md:w-60 rounded-lg border border-indigo-100 dark:border-indigo-900/30 bg-slate-50 dark:bg-slate-950 pl-8 pr-4 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-                />
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+              <div className="flex items-center gap-3">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search courses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 w-52 md:w-60 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 pl-8 pr-4 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  />
+                  <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
+                {/* Mode Filter */}
+                <select
+                  value={sortByMode}
+                  onChange={(e) => setSortByMode(e.target.value)}
+                  className="h-9 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:border-blue-500"
+                >
+                  <option value="all">All Modes</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
               </div>
-
-              {/* Mode Filter */}
-              <select
-                value={sortByMode}
-                onChange={(e) => setSortByMode(e.target.value)}
-                className="h-9 rounded-lg border border-indigo-100 dark:border-indigo-900/30 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:border-indigo-500"
-              >
-                <option value="all">All Modes</option>
-                <option value="online">Online</option>
-                <option value="offline">Offline</option>
-              </select>
             </div>
-          </div>
 
-          {/* Table Container */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] text-left border-collapse">
-              <thead>
-                <tr className="border-b border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-900/20">
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">S.No</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Date</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Course Name</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Type</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Mode</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Credit</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Organizer</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Status</th>
-                  <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                {paginatedCourses.length > 0 ? (
-                  paginatedCourses.map((row) => (
-                    <tr
-                      key={row.sno}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
-                    >
-                      <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
-                      <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.date}</td>
-                      <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[240px] truncate">
-                        {row.name}
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
-                      <td className="py-4 px-5 text-xs">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${row.mode === "Online"
+            {/* Table Container */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-900/20">
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">S.No</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Date</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Course Name</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Type</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Mode</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Credit</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Organizer</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Status</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  {paginatedCourses.length > 0 ? (
+                    paginatedCourses.map((row) => (
+                      <tr
+                        key={row.sno}
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
+                      >
+                        <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
+                        <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.date}</td>
+                        <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[240px] truncate">
+                          {row.name}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
+                        <td className="py-4 px-5 text-xs">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${row.mode === "Online"
                             ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
                             : "text-amber-600 dark:text-amber-400 font-bold text-[13px] tracking-wide bg-transparent"
-                          }`}>
-                          {row.mode}
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-xs font-bold text-slate-900 dark:text-white text-right">
-                        {row.credit}
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
-                      <td className="py-4 px-5 text-xs">
-                        <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-[13px] tracking-wide">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                          {row.status || "Registered"}
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedCourse(row)}
-                            className="text-indigo-600 dark:text-indigo-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
-                          >
-                            View
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCancelRegistration(row.sno)}
-                            className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
-                          >
-                            Cancel
-                          </button>
+                            }`}>
+                            {row.mode}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 text-xs font-bold text-slate-900 dark:text-white text-right">
+                          {row.credit}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
+                        <td className="py-4 px-5 text-xs">
+                          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-[13px] tracking-wide">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            {row.status || "Registered"}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCourse(row)}
+                              className="text-blue-600 dark:text-blue-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
+                            >
+                              View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelRegistration(row.sno)}
+                              className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-24">
+                        {/* Empty State matching screenshot "No Data Found" */}
+                        <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
+                          {/* Beautiful Padlock + Clock SVG icon */}
+                          <div className="relative mb-3 text-slate-300 dark:text-slate-800">
+                            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2">
+                              {/* Lock body */}
+                              <rect x="5" y="10" width="14" height="11" rx="2" strokeWidth="1.5" />
+                              {/* Shackle */}
+                              <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="1.5" strokeLinecap="round" />
+                              {/* Keyhole */}
+                              <circle cx="12" cy="14" r="1" fill="currentColor" />
+                              <path d="M12 15v2" strokeLinecap="round" />
+                            </svg>
+                            {/* Small Clock Overlay */}
+                            <div className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5">
+                              <svg className="h-4.5 w-4.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 8v4l2.5 1.5" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          </div>
+                          <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            No Data Found
+                          </span>
+                          <p className="text-xs text-slate-400/80 dark:text-slate-650 mt-1 max-w-[280px] text-center leading-relaxed">
+                            You haven't registered for any courses yet. Go to the Course Master tab to register.
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="py-24">
-                      {/* Empty State matching screenshot "No Data Found" */}
-                      <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
-                        {/* Beautiful Padlock + Clock SVG icon */}
-                        <div className="relative mb-3 text-slate-300 dark:text-slate-800">
-                          <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2">
-                            {/* Lock body */}
-                            <rect x="5" y="10" width="14" height="11" rx="2" strokeWidth="1.5" />
-                            {/* Shackle */}
-                            <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="1.5" strokeLinecap="round" />
-                            {/* Keyhole */}
-                            <circle cx="12" cy="14" r="1" fill="currentColor" />
-                            <path d="M12 15v2" strokeLinecap="round" />
-                          </svg>
-                          {/* Small Clock Overlay */}
-                          <div className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5">
-                            <svg className="h-4.5 w-4.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                              <circle cx="12" cy="12" r="9" />
-                              <path d="M12 8v4l2.5 1.5" strokeLinecap="round" />
-                            </svg>
-                          </div>
-                        </div>
-                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          No Data Found
-                        </span>
-                        <p className="text-xs text-slate-400/80 dark:text-slate-650 mt-1 max-w-[280px] text-center leading-relaxed">
-                          You haven't registered for any courses yet. Go to the Course Master tab to register.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table Footer */}
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-900/20">
-            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Page {currentPage} of {totalPages}
+                  )}
+                </tbody>
+              </table>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Rows per page</span>
-                <select
-                  value={rowsPerPage}
-                  onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                  className="h-8 rounded-lg border border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-950 px-2 text-xs text-slate-700 dark:text-slate-300 outline-none"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
+            {/* Table Footer */}
+            <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-900/20">
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                Page {currentPage} of {totalPages}
               </div>
 
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                  aria-label="Previous Page"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                  aria-label="Next Page"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Rows per page</span>
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    className="h-8 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 px-2 text-xs text-slate-700 dark:text-slate-300 outline-none"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                    aria-label="Previous Page"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                    aria-label="Next Page"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </main>
       </div>
 
       {/* 4. DIALOG MODAL */}
       {selectedCourse && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/30 w-full max-w-[500px] shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-blue-900/30 w-full max-w-[500px] shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                   {selectedCourse.mode} • {selectedCourse.type}
                 </span>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
@@ -344,7 +344,7 @@ export default function StudentMyCoursePage() {
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Credits</span>
-                  <span className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                  <span className="block text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5">
                     {selectedCourse.credit} Credit
                   </span>
                 </div>
