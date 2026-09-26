@@ -130,19 +130,17 @@ function AdminCourseContent() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
-                  isActive
+                className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${isActive
                     ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md scale-[1.01]"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
+                  }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                    isActive
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isActive
                       ? "bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900"
                       : tab.badgeClass
-                  }`}
+                    }`}
                 >
                   {tab.count}
                 </span>

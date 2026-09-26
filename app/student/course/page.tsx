@@ -76,7 +76,7 @@ export default function StudentCoursePage() {
       credit: 4,
       organizer: "abcd/CS1121",
       available: 10,
-      details: "Bring your AI-centric ideas to life! Pitch to domain experts, receive mentoring on scaling ML models, and compete for reward points.",
+      details: "Bring your AI-centric ideas to life! Pitch to domain experts, receive mentoring on scaling ML models, and complete the VAC course.",
     },
     {
       sno: "05",
