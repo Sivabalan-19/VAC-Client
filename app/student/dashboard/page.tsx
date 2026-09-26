@@ -1,449 +1,288 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
+import StudentSidebar from "../components/StudentSidebar";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
-  const {
-    user,
-    courses,
-    registeredCourseIds,
-    darkMode,
-    toggleDarkMode,
-    logout,
-    getStudentAttendanceSummary,
-  } = useStore();
+  const { darkMode } = useStore();
 
-  const registeredCourses = courses.filter((c) => registeredCourseIds.includes(c.id));
-  const currentCoursesCount = registeredCourses.length;
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
-  // Dynamic Credits
-  const totalEarnedCredits = registeredCourses.reduce((acc, c) => acc + (c.credits || 2), 0);
-  const redeemedCredits = Math.min(totalEarnedCredits, 4.0);
-  const availableCredits = Math.max(0, totalEarnedCredits - redeemedCredits);
+  const completedCourses = [
+    { name: "Next.js 15 & AI Integration", type: "Technical Skills", mode: "Online", credit: 4, completedOn: "15 Mar 2024" },
+    { name: "Cybersecurity Defensive Practices", type: "Technical Skills", mode: "Offline", credit: 4, completedOn: "28 Feb 2024" },
+    { name: "UI/UX Design & Figma", type: "Design Skills", mode: "Online", credit: 4, completedOn: "12 Feb 2024" },
+    { name: "Data Structures & Algorithms", type: "Technical Skills", mode: "Offline", credit: 4, completedOn: "30 Jan 2024" },
+  ];
 
-  // Dynamic Attendance Summary
-  const { totalDays, attendedDays, absentDays, percentage: attendancePercentage } = getStudentAttendanceSummary();
-
-  // Active Faculty In-Charge from first registered course or fallback
-  const firstCourse = registeredCourses[0] || courses[0];
-  const currentFaculty = {
-    name: firstCourse?.instructor || "Dr. Sarah Connor",
-    id: firstCourse?.code || "CS1121",
-    department: firstCourse?.department || "Computer Science & Engineering",
-    course: firstCourse?.name || "AI TECHNOLOGY - FUTURE OF INDUSTRIAL REVOLUTION",
-    email: "sarah.connor@university.edu",
-  };
-
-  const handleSignOut = () => {
-    logout();
-  };
-
+  const totalCredits = completedCourses.reduce((total, course) => total + course.credit, 0);
+  const yearAverage = 8.4;
+  const completionRate = 100;
+  const onlineCourses = completedCourses.filter((course) => course.mode === "Online").length;
+  const offlineCourses = completedCourses.filter((course) => course.mode === "Offline").length;
+  const averageCreditEarned = 12;
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. SIDEBAR (Unchanged) */}
-      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 h-screen sticky top-0 transition-colors duration-300 z-10">
-        <div>
-          {/* Logo / Title */}
-          <div className="mb-8 px-2">
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              REWARD <span className="font-light text-indigo-600 dark:text-indigo-400 italic">POINTS</span>
-            </h1>
-          </div>
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      <StudentSidebar activeTab="/student/dashboard" />
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            <a
-              onClick={() => router.push("/student/dashboard")}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 text-sm font-semibold transition-all duration-200 cursor-pointer"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Dashboard
-            </a>
+      {/* MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
 
-            {/* Course Register Menu */}
-            <div className="space-y-1 pt-1">
-              <div className="flex items-center gap-3 py-2 px-3 text-slate-900 dark:text-white text-sm font-bold">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Course Register
-              </div>
-              <div className="flex flex-col space-y-0.5 pl-4">
-                <a
-                  onClick={() => router.push("/student/course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-                >
-                  Course Master
-                </a>
-                <a
-                  onClick={() => router.push("/student/my-course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-                >
-                  My Courses
-                </a>
-              </div>
-            </div>
-          </nav>
-        </div>
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
 
-        {/* Logout Button */}
-        <div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-sm font-semibold transition-all duration-200 text-left cursor-pointer"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign-Out
-          </button>
-        </div>
-      </aside>
-
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-6 md:p-8 transition-colors duration-300 overflow-y-auto h-screen">
-        {/* Header Bar */}
-        <header className="flex justify-between items-center w-full mb-6">
-          <div>
-            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Student Dashboard
-            </div>
-            <div className="text-[11px] text-slate-400 dark:text-slate-500">
-              Academic Term 2023–2024 (Even Semester)
-            </div>
-          </div>
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full shadow-sm cursor-pointer transition-colors"
-            aria-label="Toggle dark theme"
-          >
-            {darkMode ? (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 18.36l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
-            )}
-          </button>
-        </header>
-
-        {/* Dashboard Content Container */}
-        <div className="space-y-6 max-w-6xl">
-          
-          {/* 1. ATTENDANCE VS TOTAL DAYS CARD */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              
-              {/* Left Column: Visual Bar Chart & Trend */}
-              <div className="flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Attendance vs Total Days
-                    </span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      Semester Attendance (Target ≥ 75%)
-                    </span>
-                  </div>
-                  <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 px-2.5 py-1 rounded-md">
-                    {attendancePercentage}% Overall
-                  </span>
-                </div>
-                
-                {/* Bar chart representation with reduced width */}
-                <div className="h-48 max-w-[280px] mx-auto w-full flex items-end justify-center gap-10 border-b border-l border-slate-100 dark:border-slate-800 p-4 mt-3 relative">
-                  
-                  {/* Left scale indicators */}
-                  <div className="absolute left-2 top-2 text-[10px] text-slate-400">100%</div>
-                  <div className="absolute left-2 top-14 text-[10px] text-slate-400">75%</div>
-                  <div className="absolute left-2 top-26 text-[10px] text-slate-400">50%</div>
-                  <div className="absolute left-2 top-38 text-[10px] text-slate-400">25%</div>
-
-                  {/* Bar 1: Total Working Days */}
-                  <div className="flex flex-col items-center gap-2 z-10 w-20">
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-350">
-                      {totalDays} Days
-                    </span>
-                    <div
-                      className="w-12 bg-slate-300 dark:bg-slate-700 rounded-t-lg transition-all duration-500 hover:opacity-90"
-                      style={{ height: "140px" }}
-                    ></div>
-                    <span className="text-[10px] font-semibold text-slate-400 mt-1 text-center">
-                      Total Days
-                    </span>
-                  </div>
-
-                  {/* Bar 2: Days Attended / Attendance Percentage */}
-                  <div className="flex flex-col items-center gap-2 z-10 w-20">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      {attendancePercentage}%
-                    </span>
-                    <div
-                      className="w-12 bg-gradient-to-t from-indigo-600 to-indigo-500 dark:from-indigo-700 dark:to-indigo-500 rounded-t-lg transition-all duration-500 hover:opacity-90 shadow-sm"
-                      style={{ height: `${(attendedDays / totalDays) * 140}px` }}
-                    ></div>
-                    <span className="text-[10px] font-semibold text-slate-400 mt-1 text-center">
-                      Attended ({attendedDays}d)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Sub-metrics inside left area: Theory vs Lab */}
-                <div className="grid grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-center">
-                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Theory Classes</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">92.0% (46/50)</span>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Lab / Practical</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">87.5% (35/40)</span>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-950/40 rounded-lg p-2">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Leaves Left</span>
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block">13 Days Safe</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Quick Attendance Statistics & Details */}
-              <div className="flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-6">
-                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-slate-50/50 dark:bg-slate-950/20 text-center space-y-3.5">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
-                    <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Attendance Breakdown
-                  </div>
-                  
-                  <div className="space-y-2 text-left">
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
-                      <span>Total Semester Days:</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{totalDays} Days</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
-                      <span>Days Present:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400">{attendedDays} Days</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
-                      <span>Unexcused Absent:</span>
-                      <span className="font-bold text-rose-500">{absentDays - 3} Days</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 pb-1.5 border-b border-slate-100 dark:border-slate-850">
-                      <span>OD / Medical Approved:</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400">3 Days</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span>Attendance Buffer:</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400">+15.0% above 75%</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-1">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Eligible for Semester Exams
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-xs font-bold shadow-sm cursor-default"
-                  >
-                    Attendance Status: {attendancePercentage}% (Safe Zone)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. CREDITS & COURSE SUMMARY CARD */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          {/* Bottom Card: Course Completion Summary */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm transition-colors duration-300">
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2.5">
+                <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Credits & Course Summary
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Course Completion Summary
                 </h3>
               </div>
-
-              <button
-                type="button"
-                onClick={() => router.push("/student/my-course")}
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-              >
-                View All Enrolled Courses →
-              </button>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">2023–2024</span>
             </div>
 
-            {/* 4 Cards Grid: Total Credits, Redeemed Credits, Available Credits, Current Courses */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* Total Credits */}
-              <div className="bg-indigo-600 dark:bg-indigo-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Total Credits</span>
-                <span className="text-xs font-bold mt-1.5">{totalEarnedCredits.toFixed(1)} Credits</span>
-              </div>
-
-              {/* Redeemed Credits */}
-              <div className="bg-amber-500 dark:bg-amber-600 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Redeemed Credits</span>
-                <span className="text-xs font-bold mt-1.5">{redeemedCredits.toFixed(1)} Credits</span>
-              </div>
-
-              {/* Available / Balance Credits */}
-              <div className="bg-emerald-600 dark:bg-emerald-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Available Credits</span>
-                <span className="text-xs font-bold mt-1.5">{availableCredits.toFixed(1)} Credits</span>
-              </div>
-
-              {/* Current Courses */}
-              <div className="bg-purple-600 dark:bg-purple-700 text-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Current Courses</span>
-                <span className="text-xs font-bold mt-1.5">{currentCoursesCount} Enrolled</span>
-              </div>
-            </div>
-
-            {/* Sub-Row: Detailed Points Distribution & Enrolled Courses Quick Status */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Honour Credits</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{redeemedCredits.toFixed(1)} Earned</span>
-                </div>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400">
-                  Target: 6.0
-                </span>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Reward Credits</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{availableCredits.toFixed(1)} Earned</span>
-                </div>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
-                  Activities / Labs
-                </span>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Academic Standing</span>
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">Gold Standing</span>
-                </div>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
-                  Top 10%
-                </span>
-              </div>
-            </div>
-
-            {/* Enrolled Courses Quick Badges Row */}
-            <div className="pt-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                Enrolled Course Progress ({registeredCourses.length})
-              </span>
-              {registeredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                  {registeredCourses.map((c, index) => (
-                    <div
-                      key={c.id}
-                      onClick={() => router.push("/student/my-course")}
-                      className="p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between text-xs hover:border-indigo-300 dark:hover:border-indigo-800 transition cursor-pointer"
-                    >
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]" title={c.name}>
-                        {c.name}
-                      </span>
-                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0 ml-1">
-                        +{c.credits} Cr
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">No registered courses yet. Browse Course Master to register.</p>
-              )}
-            </div>
-
-            {/* Current Faculty In-Charge Detailed Banner */}
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-5">
-              <div className="bg-slate-50/70 dark:bg-slate-950/40 border border-slate-200/70 dark:border-slate-800 rounded-xl p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                
-                {/* 1. Faculty Details (Left) */}
-                <div className="flex items-center gap-3.5">
-                  <div className="h-11 w-11 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200/50 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm shrink-0">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            {/* Academic summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completed Courses</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{completedCourses.length}</p>
+                  <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                     </svg>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                        Current Faculty In-Charge
+                </div>
+              </div>
+
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Credits Earned</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{totalCredits}</p>
+                  <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Year Average</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#fb923c]">{yearAverage}<span className="text-xl md:text-2xl font-semibold opacity-60">/10</span></p>
+                  <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#fb923c] flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completion Rate</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{completionRate}%</p>
+                  <div className="w-12 h-12 rounded-2xl bg-[#fee2e2] dark:bg-red-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Completion Notes */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 border-t border-slate-100 dark:border-slate-800 pt-5">
+              <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400 border-b md:border-b-0 border-slate-100 dark:border-slate-800">
+                <span>Latest completed course</span>
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">15 Mar 2024</span>
+              </div>
+              <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400">
+                <span>Learning mode split</span>
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">{onlineCourses} online / {offlineCourses} offline</span>
+              </div>
+            </div>
+          </div>
+          {/* Dashboard Grid Content */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+            {/* Left Column (takes 2 span size on larger viewports) */}
+            <div className="xl:col-span-2 space-y-6">
+
+              {/* Top row: Graph & Quick Stats Card */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 transition-colors duration-300">
+
+                {/* Semester comparison chart */}
+                <div className="flex flex-col justify-between">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Course Completion Progress
                       </span>
-                      <span className="text-[10px] font-medium text-slate-400">
-                        • {currentFaculty.id}
+                      <p className="mt-1 text-xs text-slate-400">Completed courses by semester</p>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-400">4 total</span>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-[38px_1fr] gap-3">
+                    <div className="flex h-44 flex-col justify-between pb-7 text-[10px] text-slate-400">
+                      <span>4</span>
+                      <span>2</span>
+                      <span>0</span>
+                    </div>
+                    <div className="relative h-44 border-b border-slate-200 dark:border-slate-800">
+                      <div className="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-slate-200 dark:border-slate-800" />
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-slate-200 dark:border-slate-800" />
+                      <div className="flex h-full items-end justify-around gap-8 px-6">
+                        <div className="flex h-full flex-1 flex-col items-center justify-end">
+                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
+                          <div className="w-14 rounded-t-md bg-amber-500 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
+                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 1</span>
+                        </div>
+                        <div className="flex h-full flex-1 flex-col items-center justify-end">
+                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
+                          <div className="w-14 rounded-t-md bg-blue-600 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
+                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 2</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick statistics details split */}
+                <div className="flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-6">
+                  <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-white dark:bg-slate-900 text-center space-y-4">
+                    <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-blue-600 dark:text-blue-400 uppercase">
+                      <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Completion Details
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <span>Courses completed:</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{completedCourses.length}</span>
+                      </div>
+                      <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <span>Credits earned:</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{totalCredits}</span>
+                      </div>
+                      <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <span>Year average:</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{yearAverage}/10</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400">
+                        On Track
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
-                      {currentFaculty.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {currentFaculty.department}
-                    </p>
+
+                    <button
+                      type="button"
+                      className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-bold shadow-sm cursor-default"
+                    >
+                      {completedCourses.length} Courses Completed
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Credit comparison chart */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Credit Comparison</h3>
+                    <p className="mt-1 text-xs text-slate-400">Your earned credits compared with the student average</p>
+                  </div>
+                  <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Current year</span>
+                </div>
+
+                <div className="mt-6 space-y-5">
+                  <div className="grid grid-cols-[112px_1fr_64px] items-center gap-3">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Your Credits</span>
+                    <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                      <div className="h-full rounded-full bg-blue-600 transition-all duration-200" style={{ width: `${(totalCredits / 20) * 100}%` }} />
+                    </div>
+                    <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{totalCredits} credits</span>
+                  </div>
+                  <div className="grid grid-cols-[112px_1fr_64px] items-center gap-3">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Student Average</span>
+                    <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                      <div className="h-full rounded-full bg-amber-500 transition-all duration-200" style={{ width: `${(averageCreditEarned / 20) * 100}%` }} />
+                    </div>
+                    <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{averageCreditEarned} credits</span>
+                  </div>
+                  <div className="flex justify-between pl-[115px] text-[10px] text-slate-400">
+                    <span>0 credits</span>
+                    <span>20 credits</span>
                   </div>
                 </div>
 
-                {/* 2. Office & Availability (Center - filling the empty space) */}
-                <div className="border-t md:border-t-0 md:border-l md:border-r border-slate-200 dark:border-slate-800 pt-3 md:pt-0 md:px-4 text-xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                    <span className="text-[10px] uppercase font-semibold">Faculty Office:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">Room 304, CS Block</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                    <span className="text-[10px] uppercase font-semibold">Consultation Hours:</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">03:00 PM – 05:00 PM</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                    <span className="text-[10px] uppercase font-semibold">Status:</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Available
-                    </span>
-                  </div>
-                </div>
+              </div>
+            </div>
 
-                {/* 3. Active Course & Contact (Right) */}
-                <div className="text-left md:text-right border-t md:border-t-0 border-slate-200 dark:border-slate-800 pt-3 md:pt-0">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase block">Active Course</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[240px] truncate block">
-                    {currentFaculty.course}
-                  </span>
-                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium block mt-0.5">
-                    {currentFaculty.email}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-0.5">
-                    Next Session: Thu, 10:00 AM @ Lab 3
-                  </span>
+            {/* Right Column: Detailed Split Table */}
+            <div className="self-start bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300 flex flex-col w-full">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                    Completed Courses
+                  </h3>
+                  <span className="text-[10px] text-slate-400 mt-1 block">2023-2024 Academic Year</span>
                 </div>
+              </div>
 
+              {/* Tab */}
+              <div className="mb-4">
+                <span className="inline-flex px-3 py-1.5 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-950 text-xs font-semibold rounded-lg">
+                  Course Completion Details
+                </span>
+              </div>
+
+              {/* Split up List */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/60 overflow-y-auto max-h-[360px] pr-2">
+                {completedCourses.map((course) => (
+                  <div key={course.name} className="py-3 space-y-1 text-xs font-medium">
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-slate-700 dark:text-slate-300 font-semibold truncate">{course.name}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 shrink-0">Completed</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-slate-400">
+                      <span>{course.type} · {course.mode}</span>
+                      <span>{course.credit} Credits · {course.completedOn}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
           </div>
-
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
-
-

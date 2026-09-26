@@ -1,31 +1,31 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
 import { useStore } from "../../context/StoreContext";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { courses, updateCourseStatus } = useStore();
+  const { courses, darkMode } = useStore();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   // Compute Admin Dashboard Metrics
   const totalCourses = courses.length;
-  const completedCourses = courses.filter((c) => c.statusText.includes("Completed")).length;
+  const activeCourses = courses.filter(
+    (c) => c.statusText.includes("Opened") || c.statusText.includes("Attendance") || c.statusText.includes("Approved")
+  ).length;
   const pendingCourses = courses.filter((c) => c.statusText.includes("Pending")).length;
-  const totalStudents = courses.reduce((acc, c) => acc + c.registeredCount, 0);
-
-  // Faculty count (unique instructors)
+  const totalStudents = courses.reduce((acc, c) => acc + (c.registeredCount || 0), 0);
   const uniqueInstructors = Array.from(new Set(courses.map((c) => c.instructor))).length;
-
-  const handleApproveCourse = (id: number) => {
-    updateCourseStatus(id, "Attendance Opened");
-  };
-
 
   const getStatusBadge = (statusText: string) => {
     if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-emerald-600 dark:text-emerald-400 font-bold text-[13px] tracking-wide bg-transparent">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
           {statusText}
         </span>
@@ -33,7 +33,7 @@ export default function AdminDashboardPage() {
     }
     if (statusText.includes("Completed")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60 shadow-xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-blue-600 dark:text-blue-400 font-bold text-[13px] tracking-wide bg-transparent">
           <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
           {statusText}
         </span>
@@ -41,173 +41,190 @@ export default function AdminDashboardPage() {
     }
     if (statusText.includes("Reject")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-rose-50 text-rose-700 border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-rose-600 dark:text-rose-400 font-bold text-[13px] tracking-wide bg-transparent">
           <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
           {statusText}
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-xs">
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-amber-600 dark:text-amber-400 font-bold text-[13px] tracking-wide bg-transparent">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
         {statusText}
       </span>
     );
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. UNIFIED ADMIN SIDEBAR */}
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      {/* 1. UNIFIED ADMIN SIDEBAR & HEADER */}
       <AdminSidebar activeTab="/admin/dashboard" />
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-8">
-        {/* Top Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Admin Governance Dashboard
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Welcome back, <span className="font-semibold text-indigo-600 dark:text-indigo-400">Dr. Robert Vance</span>. Comprehensive overview of VAC approvals, status metrics, and academic statistics.
-            </p>
-          </div>
+      {/* 2. MAIN CONTENT FLEX WRAPPER (Top clearance + zero sidebar gap) */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push("/admin/course")}
-              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              Manage All Courses
-            </button>
-          </div>
-        </div>
-
-        {/* METRICS STAT CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Card 1: Total Courses */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total VAC Offerings</span>
-              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalCourses}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Across all departments</p>
-          </div>
-
-          {/* Card 2: Pending Approvals */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pending Approvals</span>
-              <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{pendingCourses}</p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold">Requires Dean Review</p>
-          </div>
-
-          {/* Card 3: Total Enrolled & Faculty */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Students / Faculty</span>
-              <div className="p-2.5 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalStudents}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">{uniqueInstructors} Active Faculty Instructors</p>
-          </div>
-        </div>
-
-        {/* RECENT VAC PROPOSALS & APPROVAL QUEUE */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Main Content Area */}
+        <main className="flex-1 p-5 md:p-8 min-w-0 space-y-6">
+          {/* Page Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Course Proposals & Statuses</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Review faculty submissions and manage course lifecycle state</p>
+              <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-800 dark:text-white tracking-tight">
+                Admin Dashboard
+              </h1>
+              <p className="text-sm font-sans text-slate-500 dark:text-slate-400 mt-1">
+                Review courses, approvals, and enrollment activity.
+              </p>
             </div>
-            <button
-              onClick={() => router.push("/admin/course")}
-              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
-            >
-              View Full Course List ({courses.length}) →
-            </button>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/admin/course")}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+                Manage Courses
+              </button>
+            </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3.5 px-4">Code & Course Name</th>
-                  <th className="py-3.5 px-4">Faculty Instructor</th>
-                  <th className="py-3.5 px-4">Department</th>
-                  <th className="py-3.5 px-4">Mode / Type</th>
-                  <th className="py-3.5 px-4 text-center">Status</th>
-                  <th className="py-3.5 px-4 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors align-middle">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 shrink-0">
-                          {course.code}
-                        </span>
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white line-clamp-1">{course.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">{course.category}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
-                      {course.instructor}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">{course.department}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                          {course.mode}
-                        </span>
-                        <span className="text-slate-300 dark:text-slate-700">•</span>
-                        <span className="text-[11px] text-slate-500">{course.type}</span>
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {getStatusBadge(course.statusText)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center">
-                        <button
-                          onClick={() => router.push(`/admin/course/${course.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-all duration-150 cursor-pointer"
-                        >
-                          View Details
-                          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* METRICS STAT CARDS GRID (Exact Match to Screenshot Design) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 1: Total Courses (Blue Number + Pastel Blue Calendar Icon) */}
+            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Total Courses</span>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{totalCourses}</p>
+                <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Available in the catalogue</span>
+            </div>
+
+            {/* Card 2: Pending Approvals (Green Number + Pastel Green Clock Icon) */}
+            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Pending Approvals</span>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{pendingCourses}</p>
+                <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Awaiting review</span>
+            </div>
+
+            {/* Card 3: Active Courses (Purple Number + Pastel Purple Check Icon) */}
+            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Active Courses</span>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#9333ea] dark:text-[#a855f7]">{activeCourses}</p>
+                <div className="w-12 h-12 rounded-2xl bg-[#f3e8ff] dark:bg-purple-950/70 text-[#9333ea] dark:text-[#a855f7] flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Open for enrollment</span>
+            </div>
+
+            {/* Card 4: Enrolled Students (Orange Number + Pastel Orange Target Icon) */}
+            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Enrolled Students</span>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#f97316]">{totalStudents}</p>
+                <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#f97316] flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Across {uniqueInstructors} instructors</span>
+            </div>
           </div>
-        </div>
-      </main>
+
+          {/* Course review list */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 md:p-6 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-heading font-bold text-slate-800 dark:text-white">Recent Course Proposals</h2>
+                <p className="text-xs font-sans text-slate-500 dark:text-slate-400 mt-0.5">Review course status and enrollment activity.</p>
+              </div>
+              <button
+                onClick={() => router.push("/admin/course")}
+                className="text-xs font-heading font-bold text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                View all ({courses.length})
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-blue-100 dark:border-blue-900/30">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-blue-50/40 dark:bg-blue-900/20 text-slate-700 dark:text-slate-300 capitalize tracking-wide font-bold border-b border-blue-100 dark:border-blue-900/50">
+                  <tr>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Code & Course Name</th>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Faculty Instructor</th>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Department</th>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Mode / Type</th>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-center">Status</th>
+                    <th className="py-4 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-sans">
+                  {courses.map((course) => (
+                    <tr key={course.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors align-middle">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-code text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 shrink-0">
+                            {course.code}
+                          </span>
+                          <div>
+                            <p className="font-heading font-bold text-slate-800 dark:text-white line-clamp-1">{course.name}</p>
+                            <p className="text-[10px] text-slate-400 font-medium">{course.category}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                        {course.instructor}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 font-medium">{course.department}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                            {course.mode}
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-700">•</span>
+                          <span className="text-[11px] text-slate-500">{course.type}</span>
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        {getStatusBadge(course.statusText)}
+                      </td>
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center">
+                          <button
+                            onClick={() => router.push(`/admin/course/${course.id}`)}
+                            className="text-blue-600 dark:text-blue-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

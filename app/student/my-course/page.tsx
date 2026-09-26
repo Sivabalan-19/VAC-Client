@@ -1,57 +1,88 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
 import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
-import { Course } from "../../faculty/data/mockCourses";
+import StudentSidebar from "../components/StudentSidebar";
+
+interface CourseItem {
+  sno: string;
+  date: string;
+  name: string;
+  type: string;
+  mode: "Online" | "Offline";
+  credit: number;
+  organizer: string;
+  status: string;
+  details?: string;
+}
 
 export default function StudentMyCoursePage() {
   const router = useRouter();
-  const {
-    courses,
-    registeredCourseIds,
-    cancelRegistration,
-    darkMode,
-    toggleDarkMode,
-    logout,
-  } = useStore();
+  const { darkMode } = useStore();
 
-  // Search State
+  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortByMode, setSortByMode] = useState("all");
 
   // Selected Course details modal state
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
+
+  // Registered Courses State (loaded from localStorage)
+  const [registeredCourses, setRegisteredCourses] = useState<CourseItem[]>([]);
 
   // Pagination State
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const registeredCourses = courses.filter((c) => registeredCourseIds.includes(c.id));
+  // Load registered courses from localStorage
+  useEffect(() => {
+    const loaded = localStorage.getItem("registered_courses");
+    if (loaded) {
+      try {
+        setRegisteredCourses(JSON.parse(loaded));
+      } catch (e) {
+        console.error("Failed to parse registered courses", e);
+      }
+    }
+  }, []);
 
-  const handleSignOut = () => {
-    logout();
-  };
+  // Initialize Theme
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   // Cancel Registration
-  const handleCancelRegistration = (courseId: number) => {
+  const handleCancelRegistration = (sno: string) => {
     if (confirm("Are you sure you want to cancel your registration for this course?")) {
-      const result = cancelRegistration(courseId);
-      alert(result.message);
+      const updated = registeredCourses.filter((c) => c.sno !== sno);
+      setRegisteredCourses(updated);
+      localStorage.setItem("registered_courses", JSON.stringify(updated));
     }
   };
 
   // Filter and Sort Logic
-  const filteredCourses = registeredCourses.filter((course) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      course.name.toLowerCase().includes(query) ||
-      course.code.toLowerCase().includes(query) ||
-      course.instructor.toLowerCase().includes(query) ||
-      course.type.toLowerCase().includes(query)
-    );
-  });
+  const filteredCourses = registeredCourses
+    .filter((course) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        course.name.toLowerCase().includes(query) ||
+        course.organizer.toLowerCase().includes(query) ||
+        course.type.toLowerCase().includes(query) ||
+        course.mode.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => {
+      if (sortByMode === "online") {
+        if (a.mode === "Online" && b.mode !== "Online") return -1;
+        if (a.mode !== "Online" && b.mode === "Online") return 1;
+      } else if (sortByMode === "offline") {
+        if (a.mode === "Offline" && b.mode !== "Offline") return -1;
+        if (a.mode !== "Offline" && b.mode === "Offline") return 1;
+      }
+      return 0;
+    });
 
   // Pagination calculations
   const totalRows = filteredCourses.length;
@@ -59,292 +90,232 @@ export default function StudentMyCoursePage() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedCourses = filteredCourses.slice(startIndex, startIndex + rowsPerPage);
 
-
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, rowsPerPage]);
+  }, [searchQuery, sortByMode, rowsPerPage]);
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
-      {/* 1. SIDEBAR */}
-      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 h-screen sticky top-0 transition-colors duration-300 z-10">
-        <div>
-          {/* Logo / Title */}
-          <div className="mb-8 px-2">
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              REWARD <span className="font-light text-indigo-600 dark:text-indigo-400 italic">POINTS</span>
-            </h1>
-          </div>
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
+      <StudentSidebar activeTab="/student/my-course" />
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            <a
-              onClick={() => router.push("/student/dashboard")}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      {/* MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+          {/* Header Bar */}
+          <header className="flex justify-between items-center w-full mb-2">
+            <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-700 dark:text-slate-300">
+              <span>Course Registration</span>
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              Dashboard
-            </a>
-
-            {/* Course Register menu (Active) */}
-            <div className="space-y-1 pt-1">
-              <div className="flex items-center gap-3 py-2 px-3 text-slate-900 dark:text-white text-sm font-bold">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Course Register
-              </div>
-              <div className="flex flex-col space-y-0.5 pl-4">
-                <a
-                  onClick={() => router.push("/student/course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200 cursor-pointer"
-                >
-                  Course Master
-                </a>
-                <a
-                  onClick={() => router.push("/student/my-course")}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 text-sm font-semibold transition-all duration-200 cursor-pointer"
-                >
-                  My Courses
-                </a>
-              </div>
+              <span className="text-slate-700 dark:text-slate-300 font-semibold">My Courses</span>
             </div>
-          </nav>
-        </div>
+          </header>
 
-        {/* Logout Button */}
-        <div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-sm font-semibold transition-all duration-200 text-left cursor-pointer"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign-Out
-          </button>
-        </div>
-      </aside>
-
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-6 md:p-8 transition-colors duration-300">
-        {/* Header Bar */}
-        <header className="flex justify-between items-center w-full mb-6">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500">
-            <span>Course Registration</span>
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-            <span className="text-slate-700 dark:text-slate-300 font-semibold">My Courses</span>
-          </div>
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full shadow-sm cursor-pointer transition-colors"
-            aria-label="Toggle dark theme"
-          >
-            {darkMode ? (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 18.36l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
-            )}
-          </button>
-        </header>
-
-        {/* 3. MAIN TABLE CARD */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
-          {/* Filters Bar */}
-          <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800">
-            <div>
+          {/* 3. MAIN TABLE CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/30 rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
+            {/* Filters Bar */}
+            <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800">
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 My Courses
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Overview of enrolled courses and earned academic credits
-              </p>
+
+              <div className="flex items-center gap-3">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search courses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 w-52 md:w-60 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 pl-8 pr-4 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  />
+                  <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
+                {/* Mode Filter */}
+                <select
+                  value={sortByMode}
+                  onChange={(e) => setSortByMode(e.target.value)}
+                  className="h-9 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:border-blue-500"
+                >
+                  <option value="all">All Modes</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-60 md:w-72 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 pl-8 pr-4 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-              />
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Table Container */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[750px] text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">S.No</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Date</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Course Name</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Type</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-right">Credits</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Organizer</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Status</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                {paginatedCourses.length > 0 ? (
-                  paginatedCourses.map((row, idx) => (
-                    <tr
-                      key={row.id}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
-                    >
-                      <td className="py-4 px-5 text-xs font-medium text-slate-400 dark:text-slate-500">
-                        {String(startIndex + idx + 1).padStart(2, "0")}
-                      </td>
-                      <td className="py-4 px-5 text-xs font-medium text-slate-600 dark:text-slate-400">
-                        {row.startDate?.split(" ")[0] || row.regStartDate}
-                      </td>
-                      <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[280px] truncate">
-                        {row.name}
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
-                      <td className="py-4 px-5 text-xs font-bold text-indigo-600 dark:text-indigo-400 text-right">
-                        +{row.credits?.toFixed(1)} Credits
-                      </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.instructor}</td>
-                      <td className="py-4 px-5 text-xs">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                          Enrolled
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedCourse(row)}
-                            className="h-7 px-3 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer select-none"
-                          >
-                            View
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCancelRegistration(row.id)}
-                            className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
-                          >
-                            Cancel
-                          </button>
+            {/* Table Container */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-900/20">
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">S.No</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Date</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Course Name</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Type</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Mode</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Credit</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Organizer</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Status</th>
+                    <th className="py-3 px-5 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  {paginatedCourses.length > 0 ? (
+                    paginatedCourses.map((row) => (
+                      <tr
+                        key={row.sno}
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
+                      >
+                        <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
+                        <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.date}</td>
+                        <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[240px] truncate">
+                          {row.name}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
+                        <td className="py-4 px-5 text-xs">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${row.mode === "Online"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
+                            : "text-amber-600 dark:text-amber-400 font-bold text-[13px] tracking-wide bg-transparent"
+                            }`}>
+                            {row.mode}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 text-xs font-bold text-slate-900 dark:text-white text-right">
+                          {row.credit}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
+                        <td className="py-4 px-5 text-xs">
+                          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-[13px] tracking-wide">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            {row.status || "Registered"}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCourse(row)}
+                              className="text-blue-600 dark:text-blue-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
+                            >
+                              View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelRegistration(row.sno)}
+                              className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-24">
+                        {/* Empty State matching screenshot "No Data Found" */}
+                        <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
+                          {/* Beautiful Padlock + Clock SVG icon */}
+                          <div className="relative mb-3 text-slate-300 dark:text-slate-800">
+                            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2">
+                              {/* Lock body */}
+                              <rect x="5" y="10" width="14" height="11" rx="2" strokeWidth="1.5" />
+                              {/* Shackle */}
+                              <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="1.5" strokeLinecap="round" />
+                              {/* Keyhole */}
+                              <circle cx="12" cy="14" r="1" fill="currentColor" />
+                              <path d="M12 15v2" strokeLinecap="round" />
+                            </svg>
+                            {/* Small Clock Overlay */}
+                            <div className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5">
+                              <svg className="h-4.5 w-4.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 8v4l2.5 1.5" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          </div>
+                          <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            No Data Found
+                          </span>
+                          <p className="text-xs text-slate-400/80 dark:text-slate-650 mt-1 max-w-[280px] text-center leading-relaxed">
+                            You haven't registered for any courses yet. Go to the Course Master tab to register.
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="py-24">
-                      {/* Empty State matching screenshot "No Data Found" */}
-                      <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
-                        {/* Beautiful Padlock + Clock SVG icon */}
-                        <div className="relative mb-3 text-slate-300 dark:text-slate-800">
-                          <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2">
-                            {/* Lock body */}
-                            <rect x="5" y="10" width="14" height="11" rx="2" strokeWidth="1.5" />
-                            {/* Shackle */}
-                            <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="1.5" strokeLinecap="round" />
-                            {/* Keyhole */}
-                            <circle cx="12" cy="14" r="1" fill="currentColor" />
-                            <path d="M12 15v2" strokeLinecap="round" />
-                          </svg>
-                          {/* Small Clock Overlay */}
-                          <div className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5">
-                            <svg className="h-4.5 w-4.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                              <circle cx="12" cy="12" r="9" />
-                              <path d="M12 8v4l2.5 1.5" strokeLinecap="round" />
-                            </svg>
-                          </div>
-                        </div>
-                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          No Data Found
-                        </span>
-                        <p className="text-xs text-slate-400/80 dark:text-slate-650 mt-1 max-w-[280px] text-center leading-relaxed">
-                          You haven't registered for any courses yet. Go to the Course Master tab to register.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table Footer */}
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10">
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              Page {currentPage} of {totalPages}
+                  )}
+                </tbody>
+              </table>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Rows per page</span>
-                <select
-                  value={rowsPerPage}
-                  onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                  className="h-8 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs text-slate-700 dark:text-slate-300 outline-none"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
+            {/* Table Footer */}
+            <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-900/20">
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                Page {currentPage} of {totalPages}
               </div>
 
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                  aria-label="Previous Page"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                  aria-label="Next Page"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Rows per page</span>
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    className="h-8 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 px-2 text-xs text-slate-700 dark:text-slate-300 outline-none"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                    aria-label="Previous Page"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="h-7.5 w-7.5 flex items-center justify-center rounded-md border border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                    aria-label="Next Page"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* 4. DIALOG MODAL */}
       {selectedCourse && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-[500px] shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-blue-900/30 w-full max-w-[500px] shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-                  {selectedCourse.type} • {selectedCourse.mode}
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                  {selectedCourse.mode} • {selectedCourse.type}
                 </span>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
                   {selectedCourse.name}
@@ -368,32 +339,32 @@ export default function StudentMyCoursePage() {
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Date</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.startDate || selectedCourse.regStartDate}
+                    {selectedCourse.date}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
-                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Academic Credits</span>
-                  <span className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    +{selectedCourse.credits.toFixed(1)} Credits
+                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Credits</span>
+                  <span className="block text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                    {selectedCourse.credit} Credit
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
-                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Instructor</span>
+                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Organizer</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {selectedCourse.instructor}
+                    {selectedCourse.organizer}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Status</span>
                   <span className="block text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    Enrolled
+                    {selectedCourse.status || "Registered"}
                   </span>
                 </div>
               </div>
 
               <div>
                 <span className="block text-[10px] font-semibold text-slate-450 uppercase mb-1">Description</span>
-                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
+                <p className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">
                   {selectedCourse.details}
                 </p>
               </div>
@@ -415,4 +386,3 @@ export default function StudentMyCoursePage() {
     </div>
   );
 }
-
