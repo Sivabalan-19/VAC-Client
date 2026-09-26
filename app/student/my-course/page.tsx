@@ -8,8 +8,8 @@ interface CourseItem {
   date: string;
   name: string;
   type: string;
-  category: string;
-  points: number;
+  mode: "Online" | "Offline";
+  credit: number;
   organizer: string;
   status: string;
   details?: string;
@@ -23,7 +23,7 @@ export default function StudentMyCoursePage() {
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortByCategory, setSortByCategory] = useState("all");
+  const [sortByMode, setSortByMode] = useState("all");
 
   // Selected Course details modal state
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
@@ -92,16 +92,16 @@ export default function StudentMyCoursePage() {
         course.name.toLowerCase().includes(query) ||
         course.organizer.toLowerCase().includes(query) ||
         course.type.toLowerCase().includes(query) ||
-        course.category.toLowerCase().includes(query)
+        course.mode.toLowerCase().includes(query)
       );
     })
     .sort((a, b) => {
-      if (sortByCategory === "honour") {
-        if (a.category === "Honour Points" && b.category !== "Honour Points") return -1;
-        if (a.category !== "Honour Points" && b.category === "Honour Points") return 1;
-      } else if (sortByCategory === "reward") {
-        if (a.category === "Reward Points" && b.category !== "Reward Points") return -1;
-        if (a.category !== "Reward Points" && b.category === "Reward Points") return 1;
+      if (sortByMode === "online") {
+        if (a.mode === "Online" && b.mode !== "Online") return -1;
+        if (a.mode !== "Online" && b.mode === "Online") return 1;
+      } else if (sortByMode === "offline") {
+        if (a.mode === "Offline" && b.mode !== "Offline") return -1;
+        if (a.mode !== "Offline" && b.mode === "Offline") return 1;
       }
       return 0;
     });
@@ -114,7 +114,7 @@ export default function StudentMyCoursePage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, sortByCategory, rowsPerPage]);
+  }, [searchQuery, sortByMode, rowsPerPage]);
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
@@ -141,13 +141,13 @@ export default function StudentMyCoursePage() {
             </a>
 
             <a
-              href="#"
+              onClick={() => router.push("/student/course-complete")}
               className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 text-sm font-medium transition-all duration-200"
             >
               <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              Points Container
+              Course Complete
             </a>
 
             {/* Course Register menu (Active) */}
@@ -244,15 +244,15 @@ export default function StudentMyCoursePage() {
                 </svg>
               </div>
 
-              {/* Category Filter */}
+              {/* Mode Filter */}
               <select
-                value={sortByCategory}
-                onChange={(e) => setSortByCategory(e.target.value)}
+                value={sortByMode}
+                onChange={(e) => setSortByMode(e.target.value)}
                 className="h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:border-indigo-500"
               >
-                <option value="all">All Categories</option>
-                <option value="honour">Honour Points</option>
-                <option value="reward">Reward Points</option>
+                <option value="all">All Modes</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
               </select>
             </div>
           </div>
@@ -266,8 +266,8 @@ export default function StudentMyCoursePage() {
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Date</th>
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Course Name</th>
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Type</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Category</th>
-                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-right">Points</th>
+                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Mode</th>
+                  <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-right">Credit</th>
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Organizer</th>
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Status</th>
                   <th className="py-3 px-5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-center">Action</th>
@@ -287,16 +287,15 @@ export default function StudentMyCoursePage() {
                       </td>
                       <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
                       <td className="py-4 px-5 text-xs">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          row.category === "Honour Points"
-                            ? "bg-purple-50 text-purple-700 dark:bg-purple-950/20 dark:text-purple-400"
-                            : "bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400"
-                        }`}>
-                          {row.category}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${row.mode === "Online"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+                          }`}>
+                          {row.mode}
                         </span>
                       </td>
                       <td className="py-4 px-5 text-xs font-bold text-slate-900 dark:text-white text-right">
-                        {row.points.toFixed(1)}
+                        {row.credit}
                       </td>
                       <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
                       <td className="py-4 px-5 text-xs">
@@ -420,7 +419,7 @@ export default function StudentMyCoursePage() {
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-                  {selectedCourse.category} • {selectedCourse.type}
+                  {selectedCourse.mode} • {selectedCourse.type}
                 </span>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
                   {selectedCourse.name}
@@ -450,7 +449,7 @@ export default function StudentMyCoursePage() {
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Credits</span>
                   <span className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    {selectedCourse.points.toFixed(1)} Points
+                    {selectedCourse.credit} Credit
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
