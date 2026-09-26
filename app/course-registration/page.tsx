@@ -1,52 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "../context/StoreContext";
 
 export default function CourseRegistrationPage() {
   const router = useRouter();
-
-  // Dark Mode State
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode, logout, createCourse } = useStore();
 
   // Form State
-  const [courseType, setCourseType] = useState("");
-  const [courseCategory, setCourseCategory] = useState("");
+  const [courseType, setCourseType] = useState("Technical Skills");
+  const [courseCategory, setCourseCategory] = useState("Information Technology");
   const [courseMode, setCourseMode] = useState("online");
   const [creditCategory, setCreditCategory] = useState("vac");
   const [courseName, setCourseName] = useState("");
   const [courseDetails, setCourseDetails] = useState("");
-  const [maxIntake, setMaxIntake] = useState("");
-  const [uploadedFile, setUploadedFile] = useState<string | null>("syllabus_draft.pdf");
-  const [deptYear, setDeptYear] = useState("");
+  const [maxIntake, setMaxIntake] = useState("60");
+  const [deptYear, setDeptYear] = useState("3rd Year");
 
   // Notification state
   const [notifications, setNotifications] = useState(false);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
   const handleSignOut = () => {
-    router.push("/login");
+    logout();
   };
 
   const handleReset = () => {
@@ -57,29 +33,40 @@ export default function CourseRegistrationPage() {
     setCourseName("");
     setCourseDetails("");
     setMaxIntake("");
-    setUploadedFile(null);
     setDeptYear("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting course:", {
-      courseType,
-      courseCategory,
-      courseMode,
-      creditCategory,
-      courseName,
-      courseDetails,
-      maxIntake,
-      uploadedFile,
-      deptYear,
+    if (!courseName.trim()) {
+      alert("Please enter a course title.");
+      return;
+    }
+
+    createCourse({
+      name: courseName,
+      code: `CS${Math.floor(1000 + Math.random() * 9000)}`,
+      type: courseType || "Technical Skills",
+      category: courseCategory || "Information Technology",
+      instructor: "Dr. Sarah Connor",
+      department: "Computer Science",
+      deptYear: deptYear || "3rd Year",
+      mode: (courseMode as any) || "Online",
+      credits: 2,
+      maxIntake: Number(maxIntake) || 60,
+      regStartDate: "2026-08-20",
+      regEndDate: "2026-08-25",
+      startDate: "2026-08-28 09:00:00",
+      endDate: "2026-08-29 17:00:00",
+      location: "Virtual Classroom",
+      imageUrl: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop",
+      details: courseDetails || "Comprehensive course designed to build core competencies.",
     });
-    alert("Course Registration Proposal Saved for Step 2!");
+
+    alert("Course Proposal Saved and added to Value Added Course listings!");
+    router.push("/faculty/course");
   };
 
-  const simulateFileUpload = () => {
-    setUploadedFile("syllabus_draft_v2.pdf");
-  };
 
   return (
     <div className="flex min-h-screen w-full bg-[#f4f7fe] dark:bg-[#0b1437] transition-colors duration-300 font-sans">
@@ -397,60 +384,19 @@ export default function CourseRegistrationPage() {
                 />
               </div>
 
-              {/* Maximum Points and Rubric Sheet */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Max Credits Intake (Points) */}
-                <div>
-                  <label className="block text-sm font-bold text-[#1b2559] dark:text-white mb-2.5">
-                    Maximum Points Per Student <span className="text-[#4318ff] dark:text-[#5b38ff]">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={maxIntake}
-                    onChange={(e) => setMaxIntake(e.target.value)}
-                    placeholder="0000"
-                    className="w-full h-[54px] rounded-[16px] border border-[#e0e5f2] dark:border-[#1b2559] bg-transparent px-5 text-sm text-[#1b2559] dark:text-white placeholder:text-[#a3aed0] outline-none transition-all focus:border-[#4318ff] focus:ring-1 focus:ring-[#4318ff] dark:focus:border-[#5b38ff]"
-                  />
-                </div>
-
-                {/* Rubric/Syllabus Sheet */}
-                <div>
-                  <label className="block text-sm font-bold text-[#1b2559] dark:text-white mb-2.5">
-                    Rubric Sheet <span className="text-[#4318ff] dark:text-[#5b38ff]">*</span>
-                  </label>
-                  
-                  {uploadedFile ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between h-[54px] rounded-[16px] border border-dashed border-[#4318ff] dark:border-[#5b38ff] bg-[#f4f7fe]/40 dark:bg-[#1b254b]/10 px-5">
-                        <span className="text-xs font-semibold text-[#4318ff] dark:text-white hover:underline cursor-pointer truncate max-w-[130px]">
-                          {uploadedFile}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setUploadedFile(null)}
-                          className="text-[#a3aed0] hover:text-rose-500 font-bold text-sm cursor-pointer ml-2"
-                        >
-                          X
-                        </button>
-                      </div>
-                      <p className="flex items-center gap-1.5 text-xs text-emerald-500 font-semibold pl-1">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        File saved
-                      </p>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={simulateFileUpload}
-                      className="w-full h-[54px] rounded-[16px] border border-dashed border-[#e0e5f2] dark:border-[#1b2559] flex items-center justify-center text-xs font-bold text-[#a3aed0] hover:text-[#1b2559] hover:border-[#4318ff] transition-all cursor-pointer"
-                    >
-                      + Upload Reference Material
-                    </button>
-                  )}
-                </div>
+              {/* Maximum Points */}
+              <div>
+                <label className="block text-sm font-bold text-[#1b2559] dark:text-white mb-2.5">
+                  Maximum Points Per Student <span className="text-[#4318ff] dark:text-[#5b38ff]">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={maxIntake}
+                  onChange={(e) => setMaxIntake(e.target.value)}
+                  placeholder="0000"
+                  className="w-full h-[54px] rounded-[16px] border border-[#e0e5f2] dark:border-[#1b2559] bg-transparent px-5 text-sm text-[#1b2559] dark:text-white placeholder:text-[#a3aed0] outline-none transition-all focus:border-[#4318ff] focus:ring-1 focus:ring-[#4318ff] dark:focus:border-[#5b38ff]"
+                />
               </div>
 
               {/* Department and Year */}

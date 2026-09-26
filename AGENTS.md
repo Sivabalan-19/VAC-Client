@@ -68,6 +68,17 @@ Use the Course Complete page at `app/student/course-complete/page.tsx` as the vi
 - Data views should include a useful search/filter control and an explicit empty state when no records match.
 - Keep copy concrete and product-specific: describe completed courses, modes, credits, dates, and statuses rather than generic marketing language.
 
+### Student Dashboard Patterns
+
+- Summary cards use a white/slate surface, a thin border, a small left accent rail, and `rounded-lg` corners. Avoid heavy shadows and saturated card backgrounds.
+- Summary labels use regular uppercase text around `text-[11px]` with `tracking-wide`.
+- Summary values use `text-2xl font-normal tracking-tight`; do not use `font-bold` or `font-extrabold` for the main metric values.
+- Supporting values such as dates and mode counts use indigo `font-semibold`, while descriptive labels remain slate and regular weight.
+- Summary sections use `rounded-xl`, compact `p-5` or `p-6` spacing, and a simple divider for secondary details.
+- Comparison charts use horizontal row bars when comparing two values, with labels on the left, values on the right, and a separate scale below the bars.
+- Use indigo for the student's value and amber for the comparison or average value. Keep chart labels short and readable.
+- Dashboard metrics currently include completed courses, credits earned, year average, completion rate, and Online/Offline learning split.
+
 ## Client Persistence
 
 - Course registration is stored in browser `localStorage` under `registered_courses`.

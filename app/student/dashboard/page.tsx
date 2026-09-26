@@ -272,48 +272,51 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* Bottom Card: Course Completion Summary */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
-              <div className="flex items-center gap-2 mb-6">
-                <svg className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm transition-colors duration-300">
+              <div className="flex items-center justify-between gap-3 mb-5">
+                <div className="flex items-center gap-2.5">
+                  <svg className="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Course Completion Summary
-                </h3>
+                  </svg>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Course Completion Summary
+                  </h3>
+                </div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">2023–2024</span>
               </div>
 
               {/* Academic summary cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 border-l-4 border-l-indigo-500 rounded-xl p-4 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Completed Courses</span>
-                  <span className="text-xl font-extrabold mt-3 text-slate-900 dark:text-white">{completedCourses.length}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-indigo-500 rounded-lg p-4 flex flex-col justify-between">
+                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Completed Courses</span>
+                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{completedCourses.length}</span>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 border-l-4 border-l-emerald-500 rounded-xl p-4 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Credits Earned</span>
-                  <span className="text-xl font-extrabold mt-3 text-slate-900 dark:text-white">{totalCredits}</span>
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-emerald-500 rounded-lg p-4 flex flex-col justify-between">
+                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Credits Earned</span>
+                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{totalCredits}</span>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 border-l-4 border-l-amber-500 rounded-xl p-4 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Year Average</span>
-                  <span className="text-xl font-extrabold mt-3 text-slate-900 dark:text-white">{yearAverage}<span className="text-xs font-semibold text-slate-400">/10</span></span>
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-amber-500 rounded-lg p-4 flex flex-col justify-between">
+                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Year Average</span>
+                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{yearAverage}<span className="text-sm font-normal text-slate-400">/10</span></span>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 border-l-4 border-l-sky-500 rounded-xl p-4 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Completion Rate</span>
-                  <span className="text-xl font-extrabold mt-3 text-slate-900 dark:text-white">{completionRate}%</span>
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 border-l-2 border-l-sky-500 rounded-lg p-4 flex flex-col justify-between">
+                  <span className="text-[11px] font-normal uppercase tracking-wide text-slate-500 dark:text-slate-400">Completion Rate</span>
+                  <span className="text-2xl font-normal tracking-tight mt-3 text-slate-900 dark:text-white">{completionRate}%</span>
                 </div>
               </div>
 
               {/* Completion Notes */}
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
-                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 rounded-xl p-3.5 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="max-w-[190px]">Latest completed course</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-extrabold ml-2">15 Mar 2024</span>
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 border-t border-slate-100 dark:border-slate-800 pt-5">
+                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400 border-b md:border-b-0 border-slate-100 dark:border-slate-800">
+                  <span>Latest completed course</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">15 Mar 2024</span>
                 </div>
-                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 rounded-xl p-3.5 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="max-w-[190px]">Learning mode split</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-extrabold ml-2">{onlineCourses} online / {offlineCourses} offline</span>
+                <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400">
+                  <span>Learning mode split</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{onlineCourses} online / {offlineCourses} offline</span>
                 </div>
               </div>
             </div>

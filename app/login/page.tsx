@@ -1,42 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useStore, Role, DEMO_USERS } from "../context/StoreContext";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, darkMode, toggleDarkMode } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme ? JSON.parse(savedTheme) : false;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    localStorage.setItem("theme", JSON.stringify(nextDark));
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signing in with:", { email, password, keepLoggedIn });
-    // In a real application, you would invoke the login logic/API call here.
+    setError("");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter email and password.");
+      return;
+    }
+
+    setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    // Match role based on email or credentials
+    let matchedRole: Role = "student";
+    if (normalizedEmail.includes("faculty") || normalizedPassword.includes("faculty")) {
+      matchedRole = "faculty";
+    } else if (normalizedEmail.includes("admin") || normalizedPassword.includes("admin")) {
+      matchedRole = "admin";
+    } else if (normalizedEmail.includes("student") || normalizedPassword.includes("student")) {
+      matchedRole = "student";
+    }
+
+    login(matchedRole, normalizedEmail, normalizedPassword);
+    setIsLoading(false);
   };
+
+  const handleQuickLogin = (role: Role) => {
+    const demo = DEMO_USERS[role];
+    setEmail(demo.email);
+    setPassword(`${role}123`);
+    login(role, demo.email, `${role}123`);
+  };
+
 
   return (
     <main className="flex min-h-screen w-full flex-col lg:flex-row bg-[#f4f7fe] dark:bg-[#0b1437] transition-colors duration-300">
@@ -63,13 +77,43 @@ export default function LoginPage() {
       <section className="flex flex-1 flex-col justify-center items-center px-6 py-12 sm:px-12 md:px-20 xl:px-24 bg-white dark:bg-[#0b1437] transition-colors duration-300 relative">
         <div className="w-full max-w-[420px]">
           {/* Header */}
-          <div className="mb-9">
+          <div className="mb-6">
             <h1 className="text-[36px] font-bold tracking-tight text-[#1b2559] dark:text-white leading-[44px]">
               Sign In
             </h1>
-            <p className="mt-2.5 text-[15px] font-normal text-[#a3aed0] dark:text-gray-400">
+            <p className="mt-2 text-[15px] font-normal text-[#a3aed0] dark:text-gray-400">
               Enter your email and password to sign in!
             </p>
+          </div>
+
+          {/* Quick Demo Login Switcher */}
+          <div className="mb-6 p-3 rounded-2xl bg-[#f4f7fe] dark:bg-[#111c44] border border-[#e0e5f2] dark:border-[#1b2559]">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#a3aed0] dark:text-gray-400 mb-2">
+              Instant Demo Access:
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickLogin("student")}
+                className="py-2 px-2.5 rounded-xl bg-white dark:bg-[#0b1437] hover:bg-indigo-50 dark:hover:bg-indigo-950/60 border border-[#e0e5f2] dark:border-[#1b2559] text-xs font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer shadow-xs text-center"
+              >
+                Student
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickLogin("faculty")}
+                className="py-2 px-2.5 rounded-xl bg-white dark:bg-[#0b1437] hover:bg-indigo-50 dark:hover:bg-indigo-950/60 border border-[#e0e5f2] dark:border-[#1b2559] text-xs font-bold text-violet-600 dark:text-violet-400 transition cursor-pointer shadow-xs text-center"
+              >
+                Faculty
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickLogin("admin")}
+                className="py-2 px-2.5 rounded-xl bg-white dark:bg-[#0b1437] hover:bg-indigo-50 dark:hover:bg-indigo-950/60 border border-[#e0e5f2] dark:border-[#1b2559] text-xs font-bold text-slate-800 dark:text-slate-200 transition cursor-pointer shadow-xs text-center"
+              >
+                Admin
+              </button>
+            </div>
           </div>
 
           {/* Form */}
@@ -153,10 +197,15 @@ export default function LoginPage() {
             {/* Sign In Button */}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full h-[54px] rounded-[16px] bg-[#4318ff] hover:bg-[#3311db] text-white text-base font-bold shadow-lg shadow-[#4318ff]/15 hover:shadow-xl hover:shadow-[#4318ff]/25 transition-all duration-200 active:scale-[0.99] cursor-pointer mt-2"
             >
-              Sign In
+              {isLoading ? "Signing in..." : "Sign In"}
             </button>
+
+            {error ? (
+              <p className="text-sm font-medium text-rose-500">{error}</p>
+            ) : null}
 
             {/* Not Registered Line */}
             <div className="text-sm text-[#1b2559] dark:text-white pt-1">
