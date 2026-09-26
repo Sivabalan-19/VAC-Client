@@ -32,8 +32,8 @@ export default function FacultyCreateCoursePage() {
   const [regEndDate, setRegEndDate] = useState("2026-08-25");
 
   // Event Schedule Dates
-  const [startDate, setStartDate] = useState("2026-08-28 09:00:00");
-  const [endDate, setEndDate] = useState("2026-08-29 17:00:00");
+  const [startDate, setStartDate] = useState("2026-08-28T09:00");
+  const [endDate, setEndDate] = useState("2026-08-29T17:00");
   const [eventDays, setEventDays] = useState("2");
   const [sessionsPerDay, setSessionsPerDay] = useState("2");
   const [location, setLocation] = useState("Lab 3, CS Block");
@@ -100,26 +100,26 @@ export default function FacultyCreateCoursePage() {
               Create Course Proposal
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Multi-step wizard with real-time course card preview.
+              Submit a complete course proposal for academic review.
             </p>
           </div>
 
           <button
             onClick={() => router.push("/faculty/course")}
-            className="self-start sm:self-auto px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-sm cursor-pointer"
+            className="self-start sm:self-auto px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
           >
             ← Back to My Course
           </button>
         </div>
 
         {/* 3-STEP WIZARD PROGRESS BAR */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
           <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
             <button
               onClick={() => setCurrentStep(1)}
-              className={`py-2.5 px-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-2 ${
                 currentStep === 1
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : currentStep > 1
                   ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500"
@@ -131,9 +131,9 @@ export default function FacultyCreateCoursePage() {
 
             <button
               onClick={() => setCurrentStep(2)}
-              className={`py-2.5 px-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-2 ${
                 currentStep === 2
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : currentStep > 2
                   ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500"
@@ -145,9 +145,9 @@ export default function FacultyCreateCoursePage() {
 
             <button
               onClick={() => setCurrentStep(3)}
-              className={`py-2.5 px-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-2 ${
                 currentStep === 3
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500"
               }`}
             >
@@ -158,13 +158,14 @@ export default function FacultyCreateCoursePage() {
         </div>
 
         {/* SPLIT LAYOUT: WIZARD FORM (LEFT) + LIVE CARD PREVIEW (RIGHT) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* LEFT: STEPPER FORM FIELDS */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* STEP 1: BASIC INFO & BANNER */}
               {currentStep === 1 && (
-                <div className="space-y-6 animate-fadeIn">
+                <div className="min-h-[440px] flex flex-col space-y-6 animate-fadeIn">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -176,7 +177,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. AI TECHNOLOGY - FUTURE OF INDUSTRIAL REVOLUTION"
                         value={courseName}
                         onChange={(e) => setCourseName(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
@@ -190,7 +191,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. VAC-AI-101"
                         value={courseCode}
                         onChange={(e) => setCourseCode(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -204,7 +205,7 @@ export default function FacultyCreateCoursePage() {
                         required
                         value={courseType}
                         onChange={(e) => setCourseType(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                       >
                         <option value="">Select Course Type</option>
                         <option value="Webinar">Webinar</option>
@@ -223,7 +224,7 @@ export default function FacultyCreateCoursePage() {
                         required
                         value={courseCategory}
                         onChange={(e) => setCourseCategory(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+                        className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                       >
                         <option value="">Select Domain</option>
                         <option value="Artificial Intelligence">Artificial Intelligence & ML</option>
@@ -233,6 +234,7 @@ export default function FacultyCreateCoursePage() {
                         <option value="Cloud Computing">Cloud Computing & DevOps</option>
                       </select>
                     </div>
+                  </div>
                   </div>
 
                   {/* Banner Image Presets */}
@@ -248,7 +250,7 @@ export default function FacultyCreateCoursePage() {
                           onClick={() => setSelectedImage(preset.url)}
                           className={`relative rounded-xl overflow-hidden border-2 h-16 text-left transition cursor-pointer ${
                             selectedImage === preset.url
-                              ? "border-indigo-600 ring-2 ring-indigo-500 shadow-sm"
+                              ? "border-blue-600 ring-2 ring-blue-500 shadow-sm"
                               : "border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100"
                           }`}
                         >
@@ -261,11 +263,11 @@ export default function FacultyCreateCoursePage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-4">
+                  <div className="mt-auto flex justify-end border-t border-slate-100 dark:border-slate-800 pt-5">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(2)}
-                      className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+                      className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
                     >
                       Next Step: Dates & Schedule →
                     </button>
@@ -275,11 +277,11 @@ export default function FacultyCreateCoursePage() {
 
               {/* STEP 2: REGISTRATION DATES & EVENT SCHEDULE */}
               {currentStep === 2 && (
-                <div className="space-y-6 animate-fadeIn">
+                <div className="min-h-[440px] flex flex-col space-y-6 animate-fadeIn">
                   {/* CARD 1: COURSE REGISTRATION WINDOW */}
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
                     <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                         Course Registration Window
                       </h3>
@@ -295,7 +297,7 @@ export default function FacultyCreateCoursePage() {
                           required
                           value={regStartDate}
                           onChange={(e) => setRegStartDate(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         />
                       </div>
 
@@ -308,14 +310,14 @@ export default function FacultyCreateCoursePage() {
                           required
                           value={regEndDate}
                           onChange={(e) => setRegEndDate(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* CARD 2: EVENT SCHEDULE & VENUE */}
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
                     <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                       <div className="h-2.5 w-2.5 rounded-full bg-rose-600" />
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
@@ -333,7 +335,7 @@ export default function FacultyCreateCoursePage() {
                           required
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         />
                       </div>
 
@@ -346,7 +348,7 @@ export default function FacultyCreateCoursePage() {
                           required
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         />
                       </div>
 
@@ -360,7 +362,7 @@ export default function FacultyCreateCoursePage() {
                           placeholder="e.g. Computer Lab 304 / Zoom Link"
                           value={location}
                           onChange={(e) => setLocation(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         />
                       </div>
                     </div>
@@ -371,14 +373,14 @@ export default function FacultyCreateCoursePage() {
                           Delivery Mode
                         </label>
                         <div className="grid grid-cols-3 gap-1.5">
-                          {["online", "offline", "hybrid"].map((mode) => (
+                            {["Online", "Offline", "Hybrid"].map((mode) => (
                             <button
                               type="button"
                               key={mode}
                               onClick={() => setCourseMode(mode)}
                               className={`py-2 px-1.5 rounded-xl text-xs font-bold capitalize border transition cursor-pointer ${
                                 courseMode === mode
-                                  ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                                   : "bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
                               }`}
                             >
@@ -395,7 +397,7 @@ export default function FacultyCreateCoursePage() {
                         <select
                           value={eventDays}
                           onChange={(e) => setEventDays(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
                         >
                           <option value="1">1 Day Event</option>
                           <option value="2">2 Days Event</option>
@@ -410,7 +412,7 @@ export default function FacultyCreateCoursePage() {
                         <select
                           value={sessionsPerDay}
                           onChange={(e) => setSessionsPerDay(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
                         >
                           <option value="1">1 Session per Day</option>
                           <option value="2">2 Sessions per Day</option>
@@ -419,7 +421,7 @@ export default function FacultyCreateCoursePage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between pt-4">
+                  <div className="mt-auto flex justify-between border-t border-slate-100 dark:border-slate-800 pt-5">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
@@ -430,7 +432,7 @@ export default function FacultyCreateCoursePage() {
                     <button
                       type="button"
                       onClick={() => setCurrentStep(3)}
-                      className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+                      className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
                     >
                       Next Step: Faculty & Overview →
                     </button>
@@ -440,7 +442,7 @@ export default function FacultyCreateCoursePage() {
 
               {/* STEP 3: FACULTY & OVERVIEW */}
               {currentStep === 3 && (
-                <div className="space-y-6 animate-fadeIn">
+                <div className="min-h-[440px] flex flex-col space-y-6 animate-fadeIn">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -452,7 +454,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. Dr. Sarah Connor"
                         value={instructor}
                         onChange={(e) => setInstructor(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                       />
                     </div>
 
@@ -466,7 +468,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. Computer Science"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                       />
                     </div>
 
@@ -479,7 +481,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. 3rd Year CSE / IT"
                         value={deptYear}
                         onChange={(e) => setDeptYear(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                       />
                     </div>
                   </div>
@@ -500,7 +502,7 @@ export default function FacultyCreateCoursePage() {
                             onClick={() => setCreditCategory(c.id)}
                             className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
                               creditCategory === c.id
-                                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                                 : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
                             }`}
                           >
@@ -517,7 +519,7 @@ export default function FacultyCreateCoursePage() {
                       <select
                         value={credits}
                         onChange={(e) => setCredits(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
                       >
                         <option value="1">1 Credit</option>
                         <option value="2">2 Credits</option>
@@ -536,7 +538,7 @@ export default function FacultyCreateCoursePage() {
                         placeholder="e.g. 60"
                         value={maxIntake}
                         onChange={(e) => setMaxIntake(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                       />
                     </div>
                   </div>
@@ -551,11 +553,11 @@ export default function FacultyCreateCoursePage() {
                       placeholder="Provide a detailed summary of course objectives, practical learning outcomes, and prerequisites..."
                       value={courseDetails}
                       onChange={(e) => setCourseDetails(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                     />
                   </div>
 
-                  <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <div className="mt-auto flex justify-between border-t border-slate-200 dark:border-slate-800 pt-5">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(2)}
@@ -581,13 +583,13 @@ export default function FacultyCreateCoursePage() {
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Live Card Preview
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                 Real-time Preview
               </span>
             </div>
 
             {/* LIVE PREVIEW COURSE CARD */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
               <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <img
                   src={selectedImage}
@@ -603,7 +605,7 @@ export default function FacultyCreateCoursePage() {
                 </div>
 
                 {/* Top Right: Desk Calendar Leaf derived from Event Start Date */}
-                <div className="absolute top-3 right-3 z-10 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-lg border border-slate-200/80 dark:border-slate-800 text-center w-12 flex flex-col items-center">
+                <div className="absolute top-3 right-3 z-10 bg-white dark:bg-slate-900 rounded-lg overflow-hidden shadow-sm border border-slate-200/80 dark:border-slate-800 text-center w-12 flex flex-col items-center">
                   <div className="bg-rose-600 text-[9px] font-bold tracking-wider uppercase text-white w-full py-0.5">
                     {startDate ? new Date(startDate).toLocaleString("en-US", { month: "short" }).toUpperCase() : "AUG"}
                   </div>
@@ -614,7 +616,7 @@ export default function FacultyCreateCoursePage() {
 
                 {/* Bottom Mode */}
                 <div className="absolute bottom-3 left-3">
-                  <span className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-900/80 text-white backdrop-blur-sm">
+                  <span className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-blue-900/90 text-white backdrop-blur-sm">
                     {courseMode} • {credits} Credits
                   </span>
                 </div>
@@ -625,7 +627,7 @@ export default function FacultyCreateCoursePage() {
                   <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     {courseCode || "VAC-CODE"}
                   </span>
-                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold truncate">
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold truncate">
                     {courseCategory || "Domain Category"}
                   </span>
                 </div>
@@ -650,7 +652,7 @@ export default function FacultyCreateCoursePage() {
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                     Proposal Draft
                   </span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold text-[11px]">
+                  <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">
                     View Details →
                   </span>
                 </div>

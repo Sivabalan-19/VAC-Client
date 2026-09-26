@@ -253,13 +253,13 @@ export default function FacultyCourseDetailsPage() {
                     onClick={() => setActiveSessionId(s.id)}
                     className={`p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                       isActive
-                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-md"
-                        : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-indigo-100 dark:border-indigo-900/30 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        ? "bg-blue-50 dark:bg-blue-950/50 text-blue-950 dark:text-blue-100 border-2 border-blue-600 dark:border-blue-400 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-blue-100 dark:border-blue-900/30 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                        isActive ? "bg-indigo-500 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        isActive ? "bg-blue-600 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
                       }`}>
                         {s.dayLabel} • {s.dateStr}
                       </span>
@@ -268,7 +268,7 @@ export default function FacultyCourseDetailsPage() {
                       </span>
                     </div>
                     <p className="text-xs font-bold truncate">{s.sessionName}</p>
-                    <p className={`text-[11px] mt-0.5 ${isActive ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`}>
+                      <p className={`text-[11px] mt-0.5 ${isActive ? "text-blue-700 dark:text-blue-200" : "text-slate-400"}`}>
                       {s.timeRange}
                     </p>
                   </button>
@@ -311,7 +311,7 @@ export default function FacultyCourseDetailsPage() {
                   onClick={() => setStatusFilter("all")}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${
                     statusFilter === "all"
-                      ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-semibold"
+                      ? "bg-blue-600 text-white font-semibold"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                   }`}
                 >
