@@ -63,12 +63,17 @@ export default function FacultyCourseListPage() {
   });
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
       {/* 1. UNIFIED SIDEBAR */}
       <FacultySidebar activeTab="/faculty/course" />
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+            {/* 2. MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
         {/* HEADER WITH CREATE COURSE BUTTON AT TOP RIGHT */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -290,6 +295,7 @@ export default function FacultyCourseListPage() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }

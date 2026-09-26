@@ -82,12 +82,17 @@ export default function FacultyCreateCoursePage() {
   ];
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
       {/* 1. UNIFIED SIDEBAR */}
       <FacultySidebar activeTab="/faculty/create" />
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-8">
+            {/* 2. MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -654,6 +659,7 @@ export default function FacultyCreateCoursePage() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

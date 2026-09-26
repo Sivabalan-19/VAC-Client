@@ -45,12 +45,17 @@ export default function FacultyDashboardPage() {
 
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans">
       {/* 1. UNIFIED SIDEBAR */}
       <FacultySidebar activeTab="/faculty/dashboard" />
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="flex-1 lg:pl-64 pt-20 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+            {/* 2. MAIN CONTENT FLEX WRAPPER */}
+      <div className="flex pt-16 w-full min-h-screen">
+        {/* Sidebar Desktop Spacer */}
+        <div className="hidden lg:block w-64 shrink-0" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
         {/* Top Header Banner */}
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -143,7 +148,7 @@ export default function FacultyDashboardPage() {
                 <div
                   key={course.id}
                   onClick={() => router.push(`/faculty/course/${course.id}`)}
-                  className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                  className="group bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
                 >
                   {/* Card Banner Image */}
                   <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -216,13 +221,13 @@ export default function FacultyDashboardPage() {
         </div>
 
         {/* RECENT ATTENDANCE ACTIVITY TABLE */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-6 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Recent Event Attendance Activity</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Latest student check-ins across active VAC sessions</p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-indigo-50/40 dark:bg-indigo-900/20 text-slate-700 dark:text-slate-300 capitalize tracking-wide font-bold border-b border-indigo-100 dark:border-indigo-900/50">
                 <tr>
                   <th className="py-3 px-4">Course Name</th>
                   <th className="py-3 px-4">Student</th>
@@ -258,6 +263,7 @@ export default function FacultyDashboardPage() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

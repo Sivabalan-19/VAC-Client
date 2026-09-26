@@ -133,7 +133,7 @@ export default function StudentDashboardPage() {
               <div className="flex flex-col justify-between">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Course Completion Progress
                     </span>
                     <p className="mt-1 text-xs text-slate-400">Completed courses by semester</p>
@@ -153,12 +153,12 @@ export default function StudentDashboardPage() {
                     <div className="flex h-full items-end justify-around gap-8 px-6">
                       <div className="flex h-full flex-1 flex-col items-center justify-end">
                         <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
-                        <div className="w-14 rounded-t-md bg-amber-400 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
+                        <div className="w-14 rounded-t-md bg-amber-500 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
                         <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 1</span>
                       </div>
                       <div className="flex h-full flex-1 flex-col items-center justify-end">
                         <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
-                        <div className="w-14 rounded-t-md bg-indigo-500 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
+                        <div className="w-14 rounded-t-md bg-indigo-600 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
                         <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 2</span>
                       </div>
                     </div>
@@ -168,8 +168,8 @@ export default function StudentDashboardPage() {
 
               {/* Quick statistics details split */}
               <div className="flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-6">
-                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-slate-50/50 dark:bg-slate-950/20 text-center space-y-4">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
+                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-white dark:bg-slate-900 text-center space-y-4">
+                  <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase">
                     <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
@@ -211,24 +211,24 @@ export default function StudentDashboardPage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors duration-300">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Credit Comparison</h3>
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Credit Comparison</h3>
                   <p className="mt-1 text-xs text-slate-400">Your earned credits compared with the student average</p>
                 </div>
-                <span className="text-xs font-semibold text-slate-400">Current year</span>
+                <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Current year</span>
               </div>
 
               <div className="mt-6 space-y-5">
                 <div className="grid grid-cols-[112px_1fr_64px] items-center gap-3">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Your Credits</span>
                   <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div className="h-full rounded-full bg-indigo-500 transition-all duration-200" style={{ width: `${(totalCredits / 20) * 100}%` }} />
+                    <div className="h-full rounded-full bg-indigo-600 transition-all duration-200" style={{ width: `${(totalCredits / 20) * 100}%` }} />
                   </div>
                   <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{totalCredits} credits</span>
                 </div>
                 <div className="grid grid-cols-[112px_1fr_64px] items-center gap-3">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Student Average</span>
                   <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div className="h-full rounded-full bg-amber-400 transition-all duration-200" style={{ width: `${(averageCreditEarned / 20) * 100}%` }} />
+                    <div className="h-full rounded-full bg-amber-500 transition-all duration-200" style={{ width: `${(averageCreditEarned / 20) * 100}%` }} />
                   </div>
                   <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{averageCreditEarned} credits</span>
                 </div>

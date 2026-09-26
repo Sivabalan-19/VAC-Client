@@ -123,7 +123,7 @@ export default function CourseCompletePage() {
           </div>
         </section>
 
-        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+        <section className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Completed Course Records</h3>
@@ -150,13 +150,13 @@ export default function CourseCompletePage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/30">
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Course Name</th>
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Type</th>
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Mode</th>
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">Credit</th>
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Completed On</th>
-                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Status</th>
+                <tr className="border-b border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-900/20">
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Course Name</th>
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Type</th>
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Mode</th>
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Credit</th>
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Completed On</th>
+                  <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
