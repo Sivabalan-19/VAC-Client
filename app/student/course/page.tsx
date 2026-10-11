@@ -1,125 +1,74 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
+import {
+  courseMode,
+  fetchAvailableCourses,
+  registerForCourse,
+  type StudentCourse,
+} from "../api";
 
-interface CourseItem {
+type CourseItem = StudentCourse & {
   sno: string;
-  date: string;
-  name: string;
-  type: string;
   mode: "Online" | "Offline";
-  credit: number;
-  organizer: string;
-  available: number;
-  details?: string;
-}
+};
 
 export default function StudentCoursePage() {
-  const router = useRouter();
   const { darkMode } = useStore();
 
-  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [sortByMode, setSortByMode] = useState("all");
-
-  // Selected Course details modal state
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
-
-  // Pagination State
+  const [courses, setCourses] = useState<CourseItem[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [registering, setRegistering] = useState(false);
 
-  // Mock Course Data (clean & simplified)
-  const [courses] = useState<CourseItem[]>([
-    {
-      sno: "01",
-      date: "03/02/2024",
-      name: "Course on Next.js 15 & AI Integration",
-      type: "Technical Skills",
-      mode: "Online",
-      credit: 4,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "Hands-on experience with modern Next.js features, Server Actions, React Server Components (RSCs), and integrating Gemini models inside your applications.",
-    },
-    {
-      sno: "02",
-      date: "03/02/2024",
-      name: "Cybersecurity Bootcamp Course: Defensive Practices",
-      type: "Technical Skills",
-      mode: "Offline",
-      credit: 4,
-      organizer: "abcd/CS1121",
-      available: 40,
-      details: "Learn the fundamentals of penetration testing, incident response, network monitoring, and system hardening techniques.",
-    },
-    {
-      sno: "03",
-      date: "03/02/2024",
-      name: "UI/UX Design Course: Glassmorphism & Figma",
-      type: "Technical Skills",
-      mode: "Online",
-      credit: 4,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "A comprehensive deep dive into design systems, grid layouts, auto layout v5 in Figma, accessibility testing, and crafting fluid premium pages.",
-    },
-    {
-      sno: "04",
-      date: "03/02/2024",
-      name: "Generative AI Course: Hackathon and Pitching",
-      type: "Technical Skills",
-      mode: "Offline",
-      credit: 4,
-      organizer: "abcd/CS1121",
-      available: 10,
-      details: "Bring your AI-centric ideas to life! Pitch to domain experts, receive mentoring on scaling ML models, and complete the VAC course.",
-    },
-    {
-      sno: "05",
-      date: "05/02/2024",
-      name: "Advanced Data Structures & Algorithms Course",
-      type: "Technical Skills",
-      mode: "Online",
-      credit: 4,
-      organizer: "abcd/CS1122",
-      available: 15,
-      details: "Solve complex tree, graph, dynamic programming, and greedy algorithm problems. Ideal for coding interview preparation.",
-    },
-    {
-      sno: "06",
-      date: "07/02/2024",
-      name: "Full Stack Web Development with Go & React",
-      type: "Technical Skills",
-      mode: "Offline",
-      credit: 4,
-      organizer: "abcd/CS1123",
-      available: 30,
-      details: "Build a highly scalable backend microservice using Golang and hook it up with a responsive React frontend client using Tailwind CSS.",
-    },
-  ]);
-
-  // Initialize Theme
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  const handleRegisterCourse = (course: CourseItem) => {
-    const existing = localStorage.getItem("registered_courses");
-    const list = existing ? JSON.parse(existing) : [];
-
-    if (list.some((item: any) => item.sno === course.sno)) {
-      alert(`You are already registered for: ${course.name}`);
-      return;
+  const loadCourses = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const list = await fetchAvailableCourses();
+      setCourses(
+        list.map((course, index) => ({
+          ...course,
+          sno: String(index + 1).padStart(2, "0"),
+          mode: courseMode(course.mode),
+        }))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load courses.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const newList = [...list, { ...course, status: "Registered" }];
-    localStorage.setItem("registered_courses", JSON.stringify(newList));
-    alert(`Successfully registered for Course: ${course.name}`);
-    setSelectedCourse(null);
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const handleRegisterCourse = async (course: CourseItem) => {
+    setRegistering(true);
+    setActionMessage("");
+    try {
+      const result = await registerForCourse(course.id);
+      setActionMessage(result.message);
+      setSelectedCourse(null);
+      await loadCourses();
+    } catch (err) {
+      setActionMessage(err instanceof Error ? err.message : "Unable to register for this course.");
+    } finally {
+      setRegistering(false);
+    }
   };
 
   // Filter and Sort Logic
@@ -166,6 +115,17 @@ export default function StudentCoursePage() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+          {error ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {error}
+            </div>
+          ) : null}
+          {actionMessage ? (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300">
+              {actionMessage}
+            </div>
+          ) : null}
+          {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading courses...</p> : null}
           {/* Header Bar */}
           <header className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-700 dark:text-slate-300">
@@ -233,7 +193,7 @@ export default function StudentCoursePage() {
                   {paginatedCourses.length > 0 ? (
                     paginatedCourses.map((row) => (
                       <tr
-                        key={row.sno}
+                        key={row.id}
                         className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
                       >
                         <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
@@ -255,8 +215,8 @@ export default function StudentCoursePage() {
                         </td>
                         <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.organizer}</td>
                         <td className="py-4 px-5 text-xs">
-                          <span className={`font-semibold ${row.available <= 10 ? "text-amber-600 dark:text-amber-400" : "text-slate-600 dark:text-slate-400"}`}>
-                            {row.available} left
+                          <span className={`font-semibold ${(row.available ?? 0) <= 10 ? "text-amber-600 dark:text-amber-400" : "text-slate-600 dark:text-slate-400"}`}>
+                            {row.available ?? 0} left
                           </span>
                         </td>
                         <td className="py-4 px-5 text-center">
@@ -379,9 +339,9 @@ export default function StudentCoursePage() {
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Available</span>
-                  <span className={`block text-xs font-bold mt-0.5 ${selectedCourse.available <= 10 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
+                  <span className={`block text-xs font-bold mt-0.5 ${(selectedCourse.available ?? 0) <= 10 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
                     }`}>
-                    {selectedCourse.available} Seats left
+                    {selectedCourse.available ?? 0} Seats left
                   </span>
                 </div>
               </div>
@@ -405,10 +365,11 @@ export default function StudentCoursePage() {
               </button>
               <button
                 type="button"
+                disabled={registering}
                 onClick={() => handleRegisterCourse(selectedCourse)}
-                className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-semibold transition-all cursor-pointer"
+                className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-60"
               >
-                Register Course
+                {registering ? "Registering..." : "Register Course"}
               </button>
             </div>
           </div>

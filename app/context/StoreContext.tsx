@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { INITIAL_COURSES, Course, StudentAttendance } from "../faculty/data/mockCourses";
+import { AuthUser, loginRequest, registerRequest, getCurrentUser, getToken, setToken, RegisterPayload } from "../lib/api";
 
 export type Role = "student" | "faculty" | "admin";
 
@@ -63,7 +64,8 @@ interface StoreContextType {
   sessionAttendance: Record<number, Record<string, Record<string, "Present" | "Absent">>>;
   darkMode: boolean;
   isLoaded: boolean;
-  login: (role: Role, email?: string, password?: string) => void;
+  login: (role: Role, email?: string, password?: string) => Promise<void>;
+  register: (payload: { fullName: string; email: string; password: string; role: Role; facultyType?: "internal" | "external" | null }) => Promise<void>;
   logout: () => void;
   switchRole: (role: Role) => void;
   toggleDarkMode: () => void;
@@ -165,6 +167,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
+      const existingToken = getToken();
+      if (existingToken) {
+        getCurrentUser()
+          .then((authUser) => {
+            const logged = mapAuthUser(authUser);
+            persistUser(logged);
+          })
+          .catch(() => {
+            setToken(null);
+          });
+      }
     } catch (e) {
       console.error("Failed to load store from localStorage", e);
     } finally {
@@ -200,27 +213,67 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Authentication Login
-  const login = useCallback((role: Role, email?: string, password?: string) => {
-    const matchedUser = DEMO_USERS[role];
-    const loggedUser: User = {
-      ...matchedUser,
-      email: email?.trim() || matchedUser.email,
-    };
+  const persistUser = (loggedUser: User) => {
     setUser(loggedUser);
     localStorage.setItem("user", JSON.stringify({ ...loggedUser, isLoggedIn: true }));
+  };
 
+  const mapAuthUser = (authUser: AuthUser): User => ({
+    id: String(authUser.id),
+    name: authUser.fullName,
+    email: authUser.email,
+    role: authUser.role,
+  });
+
+  // Authentication Login
+  const login = useCallback(async (role: Role, email?: string, password?: string) => {
     const roleRoutes: Record<Role, string> = {
       student: "/student/dashboard",
       faculty: "/faculty/dashboard",
       admin: "/admin/dashboard",
     };
+
+    const trimmedEmail = email?.trim();
+    const trimmedPassword = password?.trim();
+
+    if (trimmedEmail && trimmedPassword) {
+      const result = await loginRequest(trimmedEmail, trimmedPassword);
+      setToken(result.token);
+      const loggedUser = mapAuthUser(result.user);
+      persistUser(loggedUser);
+      router.push(roleRoutes[loggedUser.role]);
+      return;
+    }
+
+    setToken(null);
+    const matchedUser = DEMO_USERS[role];
+    const loggedUser: User = {
+      ...matchedUser,
+      email: trimmedEmail || matchedUser.email,
+    };
+    persistUser(loggedUser);
     router.push(roleRoutes[role]);
+  }, [router]);
+
+  // Authentication Register
+  const register = useCallback(async (payload: RegisterPayload) => {
+    const roleRoutes: Record<Role, string> = {
+      student: "/student/dashboard",
+      faculty: "/faculty/dashboard",
+      admin: "/admin/dashboard",
+    };
+
+    const result = await registerRequest(payload);
+    setToken(result.token);
+    const loggedUser = mapAuthUser(result.user);
+    persistUser(loggedUser);
+    router.push(roleRoutes[loggedUser.role]);
   }, [router]);
 
   // Logout
   const logout = useCallback(() => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
     sessionStorage.removeItem("user");
     router.push("/login");
@@ -569,6 +622,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         darkMode,
         isLoaded,
         login,
+        register,
         logout,
         switchRole,
         toggleDarkMode,

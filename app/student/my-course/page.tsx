@@ -1,63 +1,79 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
+import {
+  cancelCourseRegistration,
+  courseMode,
+  fetchMyCourses,
+  type StudentCourse,
+} from "../api";
 
-interface CourseItem {
+type CourseItem = StudentCourse & {
   sno: string;
-  date: string;
-  name: string;
-  type: string;
   mode: "Online" | "Offline";
-  credit: number;
-  organizer: string;
   status: string;
-  details?: string;
-}
+};
 
 export default function StudentMyCoursePage() {
-  const router = useRouter();
   const { darkMode } = useStore();
-
-  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [sortByMode, setSortByMode] = useState("all");
-
-  // Selected Course details modal state
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
-
-  // Registered Courses State (loaded from localStorage)
   const [registeredCourses, setRegisteredCourses] = useState<CourseItem[]>([]);
-
-  // Pagination State
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
-  // Load registered courses from localStorage
-  useEffect(() => {
-    const loaded = localStorage.getItem("registered_courses");
-    if (loaded) {
-      try {
-        setRegisteredCourses(JSON.parse(loaded));
-      } catch (e) {
-        console.error("Failed to parse registered courses", e);
-      }
+  const mapCourses = (list: StudentCourse[]): CourseItem[] =>
+    list.map((course, index) => ({
+      ...course,
+      sno: String(index + 1).padStart(2, "0"),
+      mode: courseMode(course.mode),
+      status: course.status || "Registered",
+    }));
+
+  const loadMyCourses = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const list = await fetchMyCourses();
+      setRegisteredCourses(mapCourses(list));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load your courses.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadMyCourses();
   }, []);
 
-  // Initialize Theme
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  // Cancel Registration
-  const handleCancelRegistration = (sno: string) => {
-    if (confirm("Are you sure you want to cancel your registration for this course?")) {
-      const updated = registeredCourses.filter((c) => c.sno !== sno);
-      setRegisteredCourses(updated);
-      localStorage.setItem("registered_courses", JSON.stringify(updated));
+  const handleCancelRegistration = async (courseId: number) => {
+    if (!confirm("Are you sure you want to cancel your registration for this course?")) {
+      return;
+    }
+
+    setCancellingId(courseId);
+    setActionMessage("");
+    try {
+      const result = await cancelCourseRegistration(courseId);
+      setActionMessage(result.message);
+      setSelectedCourse(null);
+      await loadMyCourses();
+    } catch (err) {
+      setActionMessage(err instanceof Error ? err.message : "Unable to cancel this registration.");
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -105,6 +121,17 @@ export default function StudentMyCoursePage() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+          {error ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {error}
+            </div>
+          ) : null}
+          {actionMessage ? (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300">
+              {actionMessage}
+            </div>
+          ) : null}
+          {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading your courses...</p> : null}
           {/* Header Bar */}
           <header className="flex justify-between items-center w-full mb-2">
             <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-700 dark:text-slate-300">
@@ -172,7 +199,7 @@ export default function StudentMyCoursePage() {
                   {paginatedCourses.length > 0 ? (
                     paginatedCourses.map((row) => (
                       <tr
-                        key={row.sno}
+                        key={row.id}
                         className="hover:bg-slate-50/60 dark:hover:bg-slate-850/20 transition-colors"
                       >
                         <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
@@ -210,10 +237,11 @@ export default function StudentMyCoursePage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleCancelRegistration(row.sno)}
-                              className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none"
+                              onClick={() => handleCancelRegistration(row.id)}
+                              disabled={cancellingId === row.id}
+                              className="h-7 px-3 rounded-md border border-rose-100 hover:bg-rose-50 text-rose-600 dark:border-rose-950/30 dark:hover:bg-rose-950/20 text-xs font-medium transition-colors cursor-pointer select-none disabled:opacity-60"
                             >
-                              Cancel
+                              {cancellingId === row.id ? "Cancelling..." : "Cancel"}
                             </button>
                           </div>
                         </td>

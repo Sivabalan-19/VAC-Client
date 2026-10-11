@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FacultySidebar from "../components/FacultySidebar";
 import { useStore } from "../../context/StoreContext";
+import { createFacultyCourse } from "../api";
 
 export default function FacultyCreateCoursePage() {
   const router = useRouter();
-  const { createCourse } = useStore();
+  const { user } = useStore();
 
   // Wizard Step State: 1 = Basic Info, 2 = Dates & Schedule, 3 = Faculty & Overview
   const [currentStep, setCurrentStep] = useState(1);
@@ -41,35 +42,45 @@ export default function FacultyCreateCoursePage() {
   const [selectedImage, setSelectedImage] = useState("https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop");
   const [courseDetails, setCourseDetails] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseName.trim()) {
       alert("Please provide a course title.");
       return;
     }
 
-    createCourse({
-      name: courseName,
-      code: courseCode || `CS${Math.floor(1000 + Math.random() * 9000)}`,
-      type: courseType || "Technical Skills",
-      category: courseCategory || "Information Technology",
-      instructor: instructor || "Dr. Sarah Connor",
-      department: department || "Computer Science",
-      deptYear: deptYear || "3rd Year",
-      mode: (courseMode as any) || "Offline",
-      credits: Number(credits) || 2,
-      maxIntake: Number(maxIntake) || 60,
-      regStartDate: regStartDate || "2026-08-20",
-      regEndDate: regEndDate || "2026-08-25",
-      startDate: startDate || "2026-08-28 09:00:00",
-      endDate: endDate || "2026-08-29 17:00:00",
-      location: location || "Campus Lab",
-      imageUrl: selectedImage,
-      details: courseDetails || "Comprehensive value-added course designed to impart practical skills and industry certifications.",
-    });
+    try {
+      const modeVal =
+        courseMode === "Online" || courseMode === "Offline" || courseMode === "Hybrid"
+          ? courseMode
+          : "Online";
 
-    alert("New Value Added Course proposal created and submitted successfully!");
-    router.push("/faculty/course");
+      await createFacultyCourse({
+        name: courseName.trim(),
+        code: courseCode.trim() || `VAC-CS-${Math.floor(1000 + Math.random() * 9000)}`,
+        type: courseType || "Technical Skills",
+        category: courseCategory || "Information Technology",
+        instructor: instructor || user?.name || "Dr. Sarah Connor",
+        department: department || user?.department || "Computer Science & Engineering",
+        mode: modeVal,
+        credits: Number(credits) || 2,
+        maxIntake: Number(maxIntake) || 60,
+        regStartDate: regStartDate || "2026-08-20",
+        regEndDate: regEndDate || "2026-08-25",
+        startDate: startDate ? new Date(startDate).toISOString() : "2026-08-28T10:00:00Z",
+        endDate: endDate ? new Date(endDate).toISOString() : "2026-08-29T17:00:00Z",
+        location: location || "Campus Lab / Online",
+        imageUrl: selectedImage,
+        details:
+          courseDetails ||
+          "Comprehensive value-added course designed to impart practical skills and industry certifications.",
+      });
+
+      alert("New Value Added Course proposal created and submitted successfully!");
+      router.push("/faculty/course");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to create course proposal.");
+    }
   };
 
 

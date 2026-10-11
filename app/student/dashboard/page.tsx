@@ -1,13 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
+import {
+  fetchCompletedCourses,
+  fetchStudentDashboard,
+  formatDisplayDate,
+  type StudentCourse,
+  type StudentDashboard,
+} from "../api";
+
+const emptyDashboard: StudentDashboard = {
+  completedCourses: 0,
+  totalCredits: 0,
+  enrolledCourses: 0,
+  onlineCourses: 0,
+  offlineCourses: 0,
+  latestCompletedOn: null,
+  completionRate: 0,
+};
 
 export default function StudentDashboardPage() {
-  const router = useRouter();
   const { darkMode } = useStore();
+  const [dashboard, setDashboard] = useState<StudentDashboard>(emptyDashboard);
+  const [completedCourses, setCompletedCourses] = useState<StudentCourse[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (darkMode) {
@@ -17,19 +36,43 @@ export default function StudentDashboardPage() {
     }
   }, [darkMode]);
 
-  const completedCourses = [
-    { name: "Next.js 15 & AI Integration", type: "Technical Skills", mode: "Online", credit: 4, completedOn: "15 Mar 2024" },
-    { name: "Cybersecurity Defensive Practices", type: "Technical Skills", mode: "Offline", credit: 4, completedOn: "28 Feb 2024" },
-    { name: "UI/UX Design & Figma", type: "Design Skills", mode: "Online", credit: 4, completedOn: "12 Feb 2024" },
-    { name: "Data Structures & Algorithms", type: "Technical Skills", mode: "Offline", credit: 4, completedOn: "30 Jan 2024" },
-  ];
+  useEffect(() => {
+    let cancelled = false;
 
-  const totalCredits = completedCourses.reduce((total, course) => total + course.credit, 0);
-  const yearAverage = 8.4;
-  const completionRate = 100;
-  const onlineCourses = completedCourses.filter((course) => course.mode === "Online").length;
-  const offlineCourses = completedCourses.filter((course) => course.mode === "Offline").length;
-  const averageCreditEarned = 12;
+    async function loadDashboard() {
+      setLoading(true);
+      setError("");
+      try {
+        const [metrics, courses] = await Promise.all([
+          fetchStudentDashboard(),
+          fetchCompletedCourses(),
+        ]);
+        if (cancelled) return;
+        setDashboard(metrics);
+        setCompletedCourses(courses);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unable to load dashboard.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadDashboard();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totalCredits = dashboard.totalCredits;
+  const completionRate = dashboard.completionRate;
+  const onlineCourses = dashboard.onlineCourses;
+  const offlineCourses = dashboard.offlineCourses;
+  const completedCount = dashboard.completedCourses;
+  const enrolledCount = dashboard.enrolledCourses;
+  const completedBarHeight = Math.max(8, Math.min(100, completedCount * 25));
+  const enrolledBarHeight = Math.max(8, Math.min(100, enrolledCount * 25));
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans">
@@ -42,6 +85,14 @@ export default function StudentDashboardPage() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+          {error ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {error}
+            </div>
+          ) : null}
+          {loading ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">Loading dashboard...</p>
+          ) : null}
 
           {/* Bottom Card: Course Completion Summary */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm transition-colors duration-300">
@@ -62,7 +113,7 @@ export default function StudentDashboardPage() {
               <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completed Courses</span>
                 <div className="flex items-center justify-between">
-                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{completedCourses.length}</p>
+                    <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{completedCount}</p>
                   <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
@@ -84,9 +135,9 @@ export default function StudentDashboardPage() {
               </div>
 
               <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Year Average</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Enrolled Courses</span>
                 <div className="flex items-center justify-between">
-                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#fb923c]">{yearAverage}<span className="text-xl md:text-2xl font-semibold opacity-60">/10</span></p>
+                  <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#fb923c]">{enrolledCount}</p>
                   <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#fb923c] flex items-center justify-center shrink-0">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -112,7 +163,7 @@ export default function StudentDashboardPage() {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 border-t border-slate-100 dark:border-slate-800 pt-5">
               <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400 border-b md:border-b-0 border-slate-100 dark:border-slate-800">
                 <span>Latest completed course</span>
-                <span className="text-blue-600 dark:text-blue-400 font-semibold">15 Mar 2024</span>
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">{formatDisplayDate(dashboard.latestCompletedOn)}</span>
               </div>
               <div className="flex items-center justify-between py-3 text-xs text-slate-500 dark:text-slate-400">
                 <span>Learning mode split</span>
@@ -136,9 +187,9 @@ export default function StudentDashboardPage() {
                       <span className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Course Completion Progress
                       </span>
-                      <p className="mt-1 text-xs text-slate-400">Completed courses by semester</p>
+                      <p className="mt-1 text-xs text-slate-400">Completed vs currently enrolled</p>
                     </div>
-                    <span className="text-xs font-semibold text-slate-400">4 total</span>
+                    <span className="text-xs font-semibold text-slate-400">{completedCount + enrolledCount} total</span>
                   </div>
 
                   <div className="mt-6 grid grid-cols-[38px_1fr] gap-3">
@@ -152,14 +203,14 @@ export default function StudentDashboardPage() {
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-slate-200 dark:border-slate-800" />
                       <div className="flex h-full items-end justify-around gap-8 px-6">
                         <div className="flex h-full flex-1 flex-col items-center justify-end">
-                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
-                          <div className="w-14 rounded-t-md bg-amber-500 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
-                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 1</span>
+                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">{completedCount} courses</span>
+                          <div className="w-14 rounded-t-md bg-amber-500 transition-opacity duration-150 hover:opacity-80" style={{ height: `${completedBarHeight}%` }} />
+                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Completed</span>
                         </div>
                         <div className="flex h-full flex-1 flex-col items-center justify-end">
-                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">2 courses</span>
-                          <div className="w-14 rounded-t-md bg-blue-600 transition-opacity duration-150 hover:opacity-80" style={{ height: "50%" }} />
-                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Semester 2</span>
+                          <span className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-200">{enrolledCount} courses</span>
+                          <div className="w-14 rounded-t-md bg-blue-600 transition-opacity duration-150 hover:opacity-80" style={{ height: `${enrolledBarHeight}%` }} />
+                          <span className="mt-3 text-[10px] font-semibold text-slate-400">Enrolled</span>
                         </div>
                       </div>
                     </div>
@@ -179,15 +230,15 @@ export default function StudentDashboardPage() {
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                         <span>Courses completed:</span>
-                        <span className="font-bold text-blue-600 dark:text-blue-400">{completedCourses.length}</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{completedCount}</span>
                       </div>
                       <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                         <span>Credits earned:</span>
                         <span className="font-bold text-blue-600 dark:text-blue-400">{totalCredits}</span>
                       </div>
                       <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <span>Year average:</span>
-                        <span className="font-bold text-blue-600 dark:text-blue-400">{yearAverage}/10</span>
+                        <span>Currently enrolled:</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{enrolledCount}</span>
                       </div>
                     </div>
 
@@ -201,7 +252,7 @@ export default function StudentDashboardPage() {
                       type="button"
                       className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-bold shadow-sm cursor-default"
                     >
-                      {completedCourses.length} Courses Completed
+                      {completedCount} Courses Completed
                     </button>
                   </div>
                 </div>
@@ -226,11 +277,11 @@ export default function StudentDashboardPage() {
                     <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{totalCredits} credits</span>
                   </div>
                   <div className="grid grid-cols-[112px_1fr_64px] items-center gap-3">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Student Average</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Enrolled Courses</span>
                     <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                      <div className="h-full rounded-full bg-amber-500 transition-all duration-200" style={{ width: `${(averageCreditEarned / 20) * 100}%` }} />
+                      <div className="h-full rounded-full bg-amber-500 transition-all duration-200" style={{ width: `${Math.min(100, (enrolledCount * 4 / 20) * 100)}%` }} />
                     </div>
-                    <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{averageCreditEarned} credits</span>
+                    <span className="text-right text-xs font-bold text-slate-700 dark:text-slate-200">{enrolledCount} enrolled</span>
                   </div>
                   <div className="flex justify-between pl-[115px] text-[10px] text-slate-400">
                     <span>0 credits</span>
@@ -252,7 +303,7 @@ export default function StudentDashboardPage() {
                     </svg>
                     Completed Courses
                   </h3>
-                  <span className="text-[10px] text-slate-400 mt-1 block">2023-2024 Academic Year</span>
+                  <span className="text-[10px] text-slate-400 mt-1 block">From your student record</span>
                 </div>
               </div>
 
@@ -265,15 +316,17 @@ export default function StudentDashboardPage() {
 
               {/* Split up List */}
               <div className="divide-y divide-slate-100 dark:divide-slate-800/60 overflow-y-auto max-h-[360px] pr-2">
-                {completedCourses.map((course) => (
-                  <div key={course.name} className="py-3 space-y-1 text-xs font-medium">
+                {completedCourses.length === 0 ? (
+                  <p className="py-6 text-xs text-slate-400">No completed courses yet.</p>
+                ) : completedCourses.map((course) => (
+                  <div key={course.id} className="py-3 space-y-1 text-xs font-medium">
                     <div className="flex justify-between items-center gap-3">
                       <span className="text-slate-700 dark:text-slate-300 font-semibold truncate">{course.name}</span>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 shrink-0">Completed</span>
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-slate-400">
                       <span>{course.type} · {course.mode}</span>
-                      <span>{course.credit} Credits · {course.completedOn}</span>
+                      <span>{course.credit} Credits · {formatDisplayDate(course.completedOn)}</span>
                     </div>
                   </div>
                 ))}
