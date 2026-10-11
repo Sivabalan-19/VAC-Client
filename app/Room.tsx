@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, Suspense } from "react";
+import React, { ReactNode, useMemo, Suspense } from "react";
 import { LiveblocksProvider, RoomProvider } from "@liveblocks/react/suspense";
 import { useSearchParams } from "next/navigation";
 import { ClientSideSuspense } from "@liveblocks/react";
@@ -24,19 +24,49 @@ function RoomContent({ children }: { children: ReactNode }) {
     );
 }
 
+class LiveblocksErrorBoundary extends React.Component<
+    { children: ReactNode; fallback?: ReactNode },
+    { hasError: boolean }
+> {
+    constructor(props: { children: ReactNode; fallback?: ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: any) {
+        console.warn("Liveblocks error caught, falling back to local editor:", error);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return this.props.fallback ?? this.props.children;
+        }
+        return this.props.children;
+    }
+}
+
 // Main component with Suspense boundary
 export function Room({ children }: { children: ReactNode }) {
     return (
-        <Suspense fallback={<div>Loading room data...</div>}>
-            <RoomContent>{children}</RoomContent>
-        </Suspense>
+        <LiveblocksErrorBoundary fallback={<>{children}</>}>
+            <Suspense fallback={<div className="p-4 text-xs text-slate-400">Loading editor...</div>}>
+                <RoomContent>{children}</RoomContent>
+            </Suspense>
+        </LiveblocksErrorBoundary>
     );
 }
+
 export function Room2({ children }: { children: ReactNode }) {
     return (
-        <Suspense fallback={<div>Loading room data...</div>}>
-            <RoomContent>{children}</RoomContent>
-        </Suspense>
+        <LiveblocksErrorBoundary fallback={<>{children}</>}>
+            <Suspense fallback={<div className="p-4 text-xs text-slate-400">Loading editor...</div>}>
+                <RoomContent>{children}</RoomContent>
+            </Suspense>
+        </LiveblocksErrorBoundary>
     );
 }
 

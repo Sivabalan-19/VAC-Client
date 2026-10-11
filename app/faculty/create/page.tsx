@@ -37,7 +37,7 @@ export default function FacultyCreateCoursePage() {
   const [endDate, setEndDate] = useState("2026-08-29T17:00");
   const [eventDays, setEventDays] = useState("2");
   const [sessionsPerDay, setSessionsPerDay] = useState("2");
-  const [location, setLocation] = useState("Lab 3, CS Block");
+  const [location, setLocation] = useState("Textile Seminar Hall");
 
   const [selectedImage, setSelectedImage] = useState("https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop");
   const [courseDetails, setCourseDetails] = useState("");
@@ -359,18 +359,55 @@ export default function FacultyCreateCoursePage() {
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Venue / Platform Link *
+                        <div className="sm:col-span-1">
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+                            <span>Campus Venue / Hall *</span>
+                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Select or Type</span>
                           </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Computer Lab 304 / Zoom Link"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                          />
+                          <div className="space-y-2">
+                            <select
+                              value={location}
+                              onChange={(e) => setLocation(e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
+                            >
+                              <option value="Textile Seminar Hall">Textile Seminar Hall</option>
+                              <option value="ECE Seminar Hall">ECE Seminar Hall</option>
+                              <option value="SF1">SF1</option>
+                              <option value="SF2">SF2</option>
+                              <option value="Mech Seminar Hall">Mech Seminar Hall</option>
+                              <option value="Auditorium Hall">Auditorium Hall</option>
+                              <option value="Lab 304, CS Block">Lab 304, CS Block</option>
+                              <option value="Google Meet / Online">Google Meet / Online</option>
+                              <option value="custom">-- Custom Venue / Type Below --</option>
+                            </select>
+
+                            <input
+                              type="text"
+                              required
+                              placeholder="Or enter custom venue (e.g. SF1, ECE Seminar Hall)"
+                              value={location === "custom" ? "" : location}
+                              onChange={(e) => setLocation(e.target.value)}
+                              className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                            />
+
+                            {/* Quick Select Venue Chips */}
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {["Textile Seminar Hall", "ECE Seminar Hall", "SF1", "SF2"].map((hall) => (
+                                <button
+                                  type="button"
+                                  key={hall}
+                                  onClick={() => setLocation(hall)}
+                                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition border cursor-pointer ${
+                                    location === hall
+                                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+                                  }`}
+                                >
+                                  📍 {hall}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
 

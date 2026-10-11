@@ -4,14 +4,19 @@ export type StudentCourse = {
   id: number;
   date?: string;
   name: string;
+  code?: string;
   type: string;
   mode: string;
   credit: number;
   organizer: string;
+  instructor?: string;
+  department?: string;
+  location?: string | null;
   available?: number;
   details?: string;
   status?: string;
   completedOn?: string;
+  attendancePercentage?: number;
 };
 
 export type StudentDashboard = {

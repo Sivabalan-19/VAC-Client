@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
+import CertificateModal from "../components/CertificateModal";
 import {
   courseMode,
   fetchCompletedCourses,
@@ -12,10 +13,11 @@ import {
 } from "../api";
 
 export default function CourseCompletePage() {
-    const { darkMode } = useStore();
+    const { darkMode, user } = useStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [completedCourses, setCompletedCourses] = useState<StudentCourse[]>([]);
     const [completionRate, setCompletionRate] = useState(0);
+    const [selectedCertCourse, setSelectedCertCourse] = useState<StudentCourse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -157,24 +159,52 @@ export default function CourseCompletePage() {
                                         <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Credit</th>
                                         <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Completed On</th>
                                         <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Status</th>
+                                        <th className="px-5 py-4 text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize tracking-wide text-right">Certificate</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                                    {filteredCourses.length > 0 ? filteredCourses.map((course) => (
-                                        <tr key={course.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
-                                            <td className="px-5 py-4">
-                                                <div className="text-sm font-semibold text-slate-900 dark:text-white">{course.name}</div>
-                                                <div className="mt-1 text-xs text-slate-400">{course.organizer}</div>
-                                            </td>
-                                            <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{course.type}</td>
-                                            <td className="px-5 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">{courseMode(course.mode)}</td>
-                                            <td className="px-5 py-4 text-right text-sm font-bold text-blue-600 dark:text-blue-400">{course.credit}</td>
-                                            <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{formatDisplayDate(course.completedOn)}</td>
-                                            <td className="px-5 py-4"><span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Completed</span></td>
-                                        </tr>
-                                    )) : (
+                                    {filteredCourses.length > 0 ? filteredCourses.map((course) => {
+                                        const is100Attendance = (course.attendancePercentage ?? 100) >= 100;
+                                        return (
+                                            <tr key={course.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                                                <td className="px-5 py-4">
+                                                    <div className="text-sm font-semibold text-slate-900 dark:text-white">{course.name}</div>
+                                                    <div className="mt-1 text-xs text-slate-400">
+                                                        {course.code ? `${course.code} • ` : ""}{course.organizer}
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{course.type}</td>
+                                                <td className="px-5 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">{courseMode(course.mode)}</td>
+                                                <td className="px-5 py-4 text-right text-sm font-bold text-blue-600 dark:text-blue-400">{course.credit}</td>
+                                                <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{formatDisplayDate(course.completedOn)}</td>
+                                                <td className="px-5 py-4">
+                                                    <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Completed
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-4 text-right">
+                                                    {is100Attendance ? (
+                                                        <button
+                                                            onClick={() => setSelectedCertCourse(course)}
+                                                            type="button"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 hover:from-amber-400 hover:to-yellow-500 border border-amber-500/50 shadow-sm transition hover:scale-105 active:scale-95"
+                                                        >
+                                                            <svg className="w-3.5 h-3.5 text-amber-900" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 011.364 1.363l-.8 1.6 1.582 3.954A1 1 0 0118 12h-1.323l-1.582 3.954.8 1.599a1 1 0 01-1.363 1.364l-1.6-.8-3.954 1.582A1 1 0 019 18v-1.323l-3.954-1.582-1.599.8a1 1 0 01-1.364-1.363l.8-1.6L1.301 10.378A1 1 0 012 9h1.323l1.582-3.954-.8-1.599a1 1 0 011.363-1.364l1.6.8L9.619 2.301A1 1 0 0110 2zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd" />
+                                                            </svg>
+                                                            View Certificate
+                                                        </button>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                                                            {course.attendancePercentage}% Attendance (100% required)
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    }) : (
                                         <tr>
-                                            <td colSpan={6} className="px-5 py-16 text-center">
+                                            <td colSpan={7} className="px-5 py-16 text-center">
                                                 <svg className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m2.1-5.15a7.25 7.25 0 1 1-14.5 0 7.25 7.25 0 0 1 14.5 0Z" /></svg>
                                                 <p className="mt-3 text-sm font-semibold text-slate-600 dark:text-slate-300">No completed courses found</p>
                                                 <p className="mt-1 text-xs text-slate-400">Try a different course name, type, or mode.</p>
@@ -187,6 +217,16 @@ export default function CourseCompletePage() {
                     </section>
                 </main>
             </div>
+
+            {selectedCertCourse && (
+                <CertificateModal
+                    course={selectedCertCourse}
+                    studentName={user?.name || "Aarav Sharma"}
+                    studentRollNo={user?.rollNo || "21CSE01"}
+                    studentDept={user?.department || "Computer Science & Engineering"}
+                    onClose={() => setSelectedCertCourse(null)}
+                />
+            )}
         </div>
     );
 }

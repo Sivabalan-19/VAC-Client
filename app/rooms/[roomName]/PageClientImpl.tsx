@@ -1,5 +1,4 @@
 "use client";
-import { Room2 } from "@/app/Room";
 import { CollaborativeEditor } from "@/components/editor";
 
 import { decodePassphrase } from "@/lib/client-utils";
@@ -104,25 +103,24 @@ const ResizableSplitPanel: React.FC<{
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
     return (
-      <div ref={containerRef} className="flex w-full h-full">
+      <div ref={containerRef} className="flex w-full h-full overflow-hidden">
         <div
-          className="flex-shrink-0 overflow-hidden"
+          className="flex-shrink-0 overflow-hidden h-full"
           style={{ width: `${leftWidth}%` }}
         >
           {leftPanel}
         </div>
 
         <div
-          className="w-2 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex-shrink-0 transition-colors duration-150"
+          className="w-1.5 hover:w-2 bg-slate-700/80 hover:bg-indigo-500 cursor-col-resize flex-shrink-0 transition-all duration-150 relative group z-10 flex items-center justify-center select-none"
           onMouseDown={handleMouseDown}
-          style={{ backgroundColor: isDragging ? "#9ca3af" : undefined }}
+          style={{ backgroundColor: isDragging ? "#6366f1" : undefined }}
+          title="Drag to resize panels"
         >
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-1 h-12 bg-gray-500 rounded-full opacity-60" />
-          </div>
+          <div className="w-0.5 h-8 bg-slate-500 group-hover:bg-white rounded-full transition-colors pointer-events-none" />
         </div>
 
-        <div className="flex-1 overflow-hidden">{rightPanel}</div>
+        <div className="flex-1 overflow-hidden h-full">{rightPanel}</div>
       </div>
     );
   };
@@ -229,13 +227,13 @@ export function PageClientImpl(props: {
   }
 
   return (
-    <main data-lk-theme="default" className="h-screen w-screen overflow-hidden">
+    <main className="h-screen w-screen overflow-hidden bg-slate-950">
       {!connectionDetails || !preJoinChoices ? (
-        <div className="h-full flex items-center justify-center">
+        <div data-lk-theme="default" className="h-full flex items-center justify-center bg-slate-950">
           {isLoading ? (
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2  border-blue-500 mx-auto mb-4"></div>
-              <p className="text-blue-900">Connecting...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+              <p className="text-slate-300">Connecting...</p>
             </div>
           ) : (
             <PreJoin
@@ -248,42 +246,48 @@ export function PageClientImpl(props: {
       ) : (
         <ResizableSplitPanel
           leftPanel={
-            <div className="h-full w-full overflow-scroll scrollbar-hide bg-white">
-              <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 px-4 py-2 bg-gray-50 border-b border-gray-200">
-                  <h2 className="text-sm font-medium text-gray-700">
+            <div className="h-full w-full overflow-hidden bg-white flex flex-col border-r border-slate-200">
+              <div className="flex-shrink-0 px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
+                  <h2 className="text-sm font-semibold text-slate-800 tracking-tight">
                     Collaborative Editor
                   </h2>
                 </div>
-                <div className="flex-1 overflow-scroll scrollbar-hide">
-                  <Room2>
-                    <CollaborativeEditor />
-                  </Room2>
-                </div>
+                <span className="text-[11px] font-mono text-slate-500 px-2 py-0.5 rounded bg-slate-100 border border-slate-200">
+                  {props.roomName}
+                </span>
+              </div>
+              <div className="flex-1 overflow-hidden relative">
+                <CollaborativeEditor />
               </div>
             </div>
           }
           rightPanel={
-            <div className="h-full w-full overflow-hidden bg-gray-900">
-              <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 px-4 py-2 bg-gray-800 border-b border-gray-700">
-                  <h2 className="text-sm font-medium text-gray-200">
+            <div className="h-full w-full overflow-hidden bg-slate-950 flex flex-col" data-lk-theme="default">
+              <div className="flex-shrink-0 px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="text-sm font-semibold text-slate-200 tracking-tight">
                     Video Conference
                   </h2>
                 </div>
-                <div className="flex-1 overflow-hidden">
-                  <VideoConferenceComponent
-                    connectionDetails={connectionDetails}
-                    userChoices={preJoinChoices}
-                    options={{ codec: props.codec, hq: props.hq }}
-                    roomName={props.roomName}
-                  />
-                </div>
+                <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">
+                  Live
+                </span>
+              </div>
+              <div className="flex-1 overflow-hidden relative">
+                <VideoConferenceComponent
+                  connectionDetails={connectionDetails}
+                  userChoices={preJoinChoices}
+                  options={{ codec: props.codec, hq: props.hq }}
+                  roomName={props.roomName}
+                />
               </div>
             </div>
           }
-          initialLeftWidth={60}
-          minLeftWidth={35}
+          initialLeftWidth={55}
+          minLeftWidth={30}
           minRightWidth={30}
         />
       )}

@@ -223,6 +223,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     name: authUser.fullName,
     email: authUser.email,
     role: authUser.role,
+    rollNo: (authUser as any).rollNo || (authUser.role === "student" ? "21CSE01" : undefined),
+    department: (authUser as any).department || (authUser.role === "admin" ? "Dean of Academics" : "Computer Science & Engineering"),
   });
 
   // Authentication Login
