@@ -4,23 +4,60 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
 import { useStore } from "../../context/StoreContext";
+import {
+  fetchAdminDashboard,
+  fetchAdminCourses,
+  type AdminDashboard,
+  type AdminCourse,
+} from "../api";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { courses, darkMode } = useStore();
+  const { darkMode } = useStore();
+
+  const [dashboard, setDashboard] = useState<AdminDashboard>({
+    totalCourses: 0,
+    pendingCourses: 0,
+    activeCourses: 0,
+    totalStudents: 0,
+    uniqueInstructors: 0,
+  });
+  const [courses, setCourses] = useState<AdminCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  // Compute Admin Dashboard Metrics
-  const totalCourses = courses.length;
-  const activeCourses = courses.filter(
-    (c) => c.statusText.includes("Opened") || c.statusText.includes("Attendance") || c.statusText.includes("Approved")
-  ).length;
-  const pendingCourses = courses.filter((c) => c.statusText.includes("Pending")).length;
-  const totalStudents = courses.reduce((acc, c) => acc + (c.registeredCount || 0), 0);
-  const uniqueInstructors = Array.from(new Set(courses.map((c) => c.instructor))).length;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      setLoading(true);
+      setError("");
+      try {
+        const [dashData, coursesData] = await Promise.all([
+          fetchAdminDashboard(),
+          fetchAdminCourses(),
+        ]);
+        if (cancelled) return;
+        setDashboard(dashData);
+        setCourses(coursesData);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getStatusBadge = (statusText: string) => {
     if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {
@@ -91,13 +128,21 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* METRICS STAT CARDS GRID (Exact Match to Screenshot Design) */}
+          {error && (
+            <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-xs font-semibold border border-rose-200 dark:border-rose-900">
+              {error}
+            </div>
+          )}
+
+          {/* METRICS STAT CARDS GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: Total Courses (Blue Number + Pastel Blue Calendar Icon) */}
+            {/* Card 1: Total Courses */}
             <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Total Courses</span>
               <div className="flex items-center justify-between">
-                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">{totalCourses}</p>
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#2563eb] dark:text-[#3b82f6]">
+                  {loading ? "..." : dashboard.totalCourses}
+                </p>
                 <div className="w-12 h-12 rounded-2xl bg-[#dbeafe] dark:bg-blue-950/70 text-[#2563eb] dark:text-[#3b82f6] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
@@ -107,11 +152,13 @@ export default function AdminDashboardPage() {
               <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Available in the catalogue</span>
             </div>
 
-            {/* Card 2: Pending Approvals (Green Number + Pastel Green Clock Icon) */}
+            {/* Card 2: Pending Approvals */}
             <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Pending Approvals</span>
               <div className="flex items-center justify-between">
-                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{pendingCourses}</p>
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">
+                  {loading ? "..." : dashboard.pendingCourses}
+                </p>
                 <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -121,11 +168,13 @@ export default function AdminDashboardPage() {
               <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Awaiting review</span>
             </div>
 
-            {/* Card 3: Active Courses (Purple Number + Pastel Purple Check Icon) */}
+            {/* Card 3: Active Courses */}
             <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Active Courses</span>
               <div className="flex items-center justify-between">
-                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#9333ea] dark:text-[#a855f7]">{activeCourses}</p>
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#9333ea] dark:text-[#a855f7]">
+                  {loading ? "..." : dashboard.activeCourses}
+                </p>
                 <div className="w-12 h-12 rounded-2xl bg-[#f3e8ff] dark:bg-purple-950/70 text-[#9333ea] dark:text-[#a855f7] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -135,18 +184,22 @@ export default function AdminDashboardPage() {
               <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Open for enrollment</span>
             </div>
 
-            {/* Card 4: Enrolled Students (Orange Number + Pastel Orange Target Icon) */}
+            {/* Card 4: Enrolled Students */}
             <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Enrolled Students</span>
               <div className="flex items-center justify-between">
-                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#f97316]">{totalStudents}</p>
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#ea580c] dark:text-[#f97316]">
+                  {loading ? "..." : dashboard.totalStudents}
+                </p>
                 <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#ea580c] dark:text-[#f97316] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                   </svg>
                 </div>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Across {uniqueInstructors} instructors</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">
+                Across {loading ? "..." : dashboard.uniqueInstructors} instructors
+              </span>
             </div>
           </div>
 
@@ -159,7 +212,7 @@ export default function AdminDashboardPage() {
               </div>
               <button
                 onClick={() => router.push("/admin/course")}
-                className="text-xs font-heading font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs font-heading font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
               >
                 View all ({courses.length})
               </button>
@@ -178,47 +231,55 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-sans">
-                  {courses.map((course) => (
-                    <tr key={course.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors align-middle">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-code text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 shrink-0">
-                            {course.code}
-                          </span>
-                          <div>
-                            <p className="font-heading font-bold text-slate-800 dark:text-white line-clamp-1">{course.name}</p>
-                            <p className="text-[10px] text-slate-400 font-medium">{course.category}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
-                        {course.instructor}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500 font-medium">{course.department}</td>
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                            {course.mode}
-                          </span>
-                          <span className="text-slate-300 dark:text-slate-700">•</span>
-                          <span className="text-[11px] text-slate-500">{course.type}</span>
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        {getStatusBadge(course.statusText)}
-                      </td>
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={() => router.push(`/admin/course/${course.id}`)}
-                            className="text-blue-600 dark:text-blue-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
-                          >
-                            View Details
-                          </button>
-                        </div>
+                  {courses.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-6 text-center text-slate-400">
+                        {loading ? "Loading courses..." : "No courses found."}
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    courses.map((course) => (
+                      <tr key={course.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors align-middle">
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-code text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 shrink-0">
+                              {course.code}
+                            </span>
+                            <div>
+                              <p className="font-heading font-bold text-slate-800 dark:text-white line-clamp-1">{course.name}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{course.category}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                          {course.instructor}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-500 font-medium">{course.department}</td>
+                        <td className="py-3.5 px-4">
+                          <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                              {course.mode}
+                            </span>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="text-[11px] text-slate-500">{course.type}</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {getStatusBadge(course.statusText)}
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => router.push(`/admin/course/${course.id}`)}
+                              className="text-blue-600 dark:text-blue-400 font-bold text-[13px] hover:underline cursor-pointer transition-colors"
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

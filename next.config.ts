@@ -1,7 +1,20 @@
 import type { NextConfig } from "next";
 
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/health",
+        destination: `${apiOrigin}/health`,
+      },
+      {
+        source: "/api/:path*",
+        destination: `${apiOrigin}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

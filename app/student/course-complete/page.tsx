@@ -1,66 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
-
-interface CompletedCourse {
-    name: string;
-    type: string;
-    mode: "Online" | "Offline";
-    credit: number;
-    completedOn: string;
-    organizer: string;
-}
-
-const completedCourses: CompletedCourse[] = [
-    {
-        name: "Next.js 15 & AI Integration",
-        type: "Technical Skills",
-        mode: "Online",
-        credit: 4,
-        completedOn: "15 Mar 2024",
-        organizer: "Computer Science Department",
-    },
-    {
-        name: "Cybersecurity Defensive Practices",
-        type: "Technical Skills",
-        mode: "Offline",
-        credit: 4,
-        completedOn: "28 Feb 2024",
-        organizer: "Cybersecurity Club",
-    },
-    {
-        name: "UI/UX Design & Figma",
-        type: "Design Skills",
-        mode: "Online",
-        credit: 4,
-        completedOn: "12 Feb 2024",
-        organizer: "Design Society",
-    },
-    {
-        name: "Data Structures & Algorithms",
-        type: "Technical Skills",
-        mode: "Offline",
-        credit: 4,
-        completedOn: "30 Jan 2024",
-        organizer: "Computer Science Department",
-    },
-];
+import {
+  courseMode,
+  fetchCompletedCourses,
+  fetchStudentDashboard,
+  formatDisplayDate,
+  type StudentCourse,
+} from "../api";
 
 export default function CourseCompletePage() {
-    const router = useRouter();
     const { darkMode } = useStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [completedCourses, setCompletedCourses] = useState<StudentCourse[]>([]);
+    const [completionRate, setCompletionRate] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         document.documentElement.classList.toggle("dark", darkMode);
     }, [darkMode]);
 
-    const totalCredits = completedCourses.reduce((total, course) => total + course.credit, 0);
-    const onlineCount = completedCourses.filter((course) => course.mode === "Online").length;
-    const offlineCount = completedCourses.filter((course) => course.mode === "Offline").length;
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadCompleted() {
+            setLoading(true);
+            setError("");
+            try {
+                const [courses, dashboard] = await Promise.all([
+                    fetchCompletedCourses(),
+                    fetchStudentDashboard(),
+                ]);
+                if (cancelled) return;
+                setCompletedCourses(courses);
+                setCompletionRate(dashboard.completionRate);
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : "Unable to load completed courses.");
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+
+        loadCompleted();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const totalCredits = completedCourses.reduce((total, course) => total + (course.credit || 0), 0);
+    const onlineCount = completedCourses.filter((course) => courseMode(course.mode) === "Online").length;
+    const offlineCount = completedCourses.filter((course) => courseMode(course.mode) === "Offline").length;
     const filteredCourses = completedCourses.filter((course) => {
         const query = searchQuery.trim().toLowerCase();
         return !query || `${course.name} ${course.type} ${course.mode} ${course.organizer}`.toLowerCase().includes(query);
@@ -77,6 +71,12 @@ export default function CourseCompletePage() {
 
                 {/* Main Content Area */}
                 <main className="flex-1 p-4 md:p-8 min-w-0 space-y-6">
+                    {error ? (
+                        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+                            {error}
+                        </div>
+                    ) : null}
+                    {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading completed courses...</p> : null}
                     <header className="flex items-start justify-between gap-4 mb-8">
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">Student Portal</p>
@@ -113,7 +113,7 @@ export default function CourseCompletePage() {
                         <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Completion Rate</span>
                             <div className="flex items-center justify-between">
-                                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">100%</p>
+                                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">{completionRate}%</p>
                                 <div className="w-12 h-12 rounded-2xl bg-[#ffedd5] dark:bg-orange-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -161,15 +161,15 @@ export default function CourseCompletePage() {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                                     {filteredCourses.length > 0 ? filteredCourses.map((course) => (
-                                        <tr key={course.name} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                                        <tr key={course.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
                                             <td className="px-5 py-4">
                                                 <div className="text-sm font-semibold text-slate-900 dark:text-white">{course.name}</div>
                                                 <div className="mt-1 text-xs text-slate-400">{course.organizer}</div>
                                             </td>
                                             <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{course.type}</td>
-                                            <td className="px-5 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">{course.mode}</td>
+                                            <td className="px-5 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">{courseMode(course.mode)}</td>
                                             <td className="px-5 py-4 text-right text-sm font-bold text-blue-600 dark:text-blue-400">{course.credit}</td>
-                                            <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{course.completedOn}</td>
+                                            <td className="px-5 py-4 text-xs text-slate-500 dark:text-slate-400">{formatDisplayDate(course.completedOn)}</td>
                                             <td className="px-5 py-4"><span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Completed</span></td>
                                         </tr>
                                     )) : (

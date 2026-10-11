@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "../context/StoreContext";
+import { createFacultyCourse } from "../faculty/api";
 
 export default function CourseRegistrationPage() {
   const router = useRouter();
-  const { darkMode, toggleDarkMode, logout, createCourse } = useStore();
+  const { darkMode, toggleDarkMode, logout } = useStore();
 
   // Form State
   const [courseType, setCourseType] = useState("Technical Skills");
@@ -36,35 +37,38 @@ export default function CourseRegistrationPage() {
     setDeptYear("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseName.trim()) {
       alert("Please enter a course title.");
       return;
     }
 
-    createCourse({
-      name: courseName,
-      code: `CS${Math.floor(1000 + Math.random() * 9000)}`,
-      type: courseType || "Technical Skills",
-      category: courseCategory || "Information Technology",
-      instructor: "Dr. Sarah Connor",
-      department: "Computer Science",
-      deptYear: deptYear || "3rd Year",
-      mode: (courseMode as any) || "Online",
-      credits: 2,
-      maxIntake: Number(maxIntake) || 60,
-      regStartDate: "2026-08-20",
-      regEndDate: "2026-08-25",
-      startDate: "2026-08-28 09:00:00",
-      endDate: "2026-08-29 17:00:00",
-      location: "Virtual Classroom",
-      imageUrl: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop",
-      details: courseDetails || "Comprehensive course designed to build core competencies.",
-    });
+    try {
+      await createFacultyCourse({
+        name: courseName.trim(),
+        code: `VAC-CS-${Math.floor(1000 + Math.random() * 9000)}`,
+        type: courseType || "Technical Skills",
+        category: courseCategory || "Information Technology",
+        instructor: "Dr. Sarah Connor",
+        department: "Computer Science & Engineering",
+        mode: courseMode === "offline" ? "Offline" : "Online",
+        credits: 2,
+        maxIntake: Number(maxIntake) || 60,
+        regStartDate: "2026-08-20",
+        regEndDate: "2026-08-25",
+        startDate: "2026-08-28T10:00:00Z",
+        endDate: "2026-08-29T17:00:00Z",
+        location: "Virtual Classroom",
+        imageUrl: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=600&auto=format&fit=crop",
+        details: courseDetails || "Comprehensive course designed to build core competencies.",
+      });
 
-    alert("Course Proposal Saved and added to Value Added Course listings!");
-    router.push("/faculty/course");
+      alert("Course Proposal Saved and added to Value Added Course listings!");
+      router.push("/faculty/course");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to save course proposal.");
+    }
   };
 
 
