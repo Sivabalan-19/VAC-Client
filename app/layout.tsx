@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
+import "@livekit/components-styles";
+import "@livekit/components-styles/prefabs";
 import { StoreProvider } from "./context/StoreContext";
 
 const spaceGrotesk = Space_Grotesk({
