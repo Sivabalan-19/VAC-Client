@@ -287,6 +287,14 @@ export default function FacultyCourseListPage() {
                           </span>
                         </div>
 
+                        {course.location && (
+                          <div className="mb-2 flex items-center gap-1.5 text-xs">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                              <span className="text-rose-500">📍</span> {course.location}
+                            </span>
+                          </div>
+                        )}
+
                         <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {course.name}
                         </h3>
