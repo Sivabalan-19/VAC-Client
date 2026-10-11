@@ -1,5 +1,5 @@
 const TOKEN_KEY = "vac_auth_token";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export class ApiError extends Error {
   status: number;
