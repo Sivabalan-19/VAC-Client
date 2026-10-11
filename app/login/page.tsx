@@ -100,7 +100,7 @@ export default function LoginPage() {
 
   const handleQuickLogin = async (quickRole: Role) => {
     const demo = DEMO_USERS[quickRole];
-    const demoPassword = quickRole === "student" ? "Password123!" : `${quickRole}123`;
+    const demoPassword = "password123";
     setEmail(demo.email);
     setPassword(demoPassword);
     setRole(quickRole);

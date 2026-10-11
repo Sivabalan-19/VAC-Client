@@ -204,8 +204,13 @@ export default function StudentMyCoursePage() {
                       >
                         <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.sno}</td>
                         <td className="py-4 px-5 text-[13px] font-semibold text-slate-700 dark:text-slate-300">{row.date}</td>
-                        <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[240px] truncate">
-                          {row.name}
+                        <td className="py-4 px-5 text-sm font-semibold text-slate-900 dark:text-white max-w-[240px]">
+                          <div>{row.name}</div>
+                          {row.location && (
+                            <div className="text-[11px] font-medium text-blue-600 dark:text-blue-400 mt-0.5 flex items-center gap-1">
+                              <span>📍 {row.location}</span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400">{row.type}</td>
                         <td className="py-4 px-5 text-xs">
@@ -380,6 +385,12 @@ export default function StudentMyCoursePage() {
                   <span className="block text-[10px] font-semibold text-slate-450 uppercase">Organizer</span>
                   <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                     {selectedCourse.organizer}
+                  </span>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">
+                  <span className="block text-[10px] font-semibold text-slate-450 uppercase">Venue / Hall</span>
+                  <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                    📍 {selectedCourse.location || "Textile Seminar Hall"}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 rounded-lg p-3">

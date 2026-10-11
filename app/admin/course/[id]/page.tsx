@@ -230,8 +230,9 @@ export default function AdminCourseDetailsPage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
                       {course.category} • {course.credits} Academic Credits
                     </p>
-                    <p className="text-xl sm:text-2xl font-bold">{course.name}</p>
-                    <p className="text-xs text-slate-300">Instructor: {course.instructor} ({course.department})</p>
+                    <p className="text-xs text-slate-300">
+                      Instructor: {course.instructor} ({course.department}) • <span className="text-yellow-300 font-semibold">📍 Venue: {course.location || "Textile Seminar Hall"}</span>
+                    </p>
                   </div>
                 </div>
               </div>
