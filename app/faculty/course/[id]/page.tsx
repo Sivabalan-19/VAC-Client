@@ -207,6 +207,7 @@ export default function FacultyCourseDetailsPage() {
                   alt={course.name}
                   className="w-full h-full object-cover"
                 />
+                
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex items-end p-6">
                   <div className="text-white space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
