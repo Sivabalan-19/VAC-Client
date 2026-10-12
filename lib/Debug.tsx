@@ -1,11 +1,17 @@
 import * as React from 'react';
 import { useRoomContext } from '@livekit/components-react';
-import { setLogLevel, LogLevel, RemoteTrackPublication, setLogExtension } from 'livekit-client';
+import { setLogLevel, LogLevel, RemoteTrackPublication, setLogExtension, type Room } from 'livekit-client';
 // @ts-ignore
 import { tinykeys } from 'tinykeys';
 import { datadogLogs } from '@datadog/browser-logs';
 
 import styles from '../styles/Debug.module.css';
+
+declare global {
+  interface Window {
+    __lk_room: Room | undefined;
+  }
+}
 
 export const useDebugMode = ({ logLevel }: { logLevel?: LogLevel }) => {
   const room = useRoomContext();
