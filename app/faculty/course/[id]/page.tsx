@@ -181,12 +181,24 @@ export default function FacultyCourseDetailsPage() {
               </h1>
             </div>
 
-            <button
-              onClick={() => router.push("/faculty/course")}
-              className="self-start sm:self-auto px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-            >
-              ← Back to Courses
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {course.mode.toLowerCase() === "online" && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/rooms/${course.id}`)}
+                  className="self-start sm:self-auto px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Open online course
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => router.push("/faculty/course")}
+                className="self-start sm:self-auto px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                ← Back to Courses
+              </button>
+            </div>
           </div>
 
           {/* STATUS NOTIFICATION BANNER */}
