@@ -1,16 +1,18 @@
-import { Chatbot } from "@/component";
-import { SideBar } from "@/component/sidebar";
+import { Chatbot } from "@/components/chatbot/Chatbot";
+import { Sidebar } from "@/components/chatbot/Sidebar";
 import { use } from "react";
 
-
-export default function Home({ params }: any) {
-  const unwrappedParams = use(params);
-  const { id } = unwrappedParams as { id: string };
+export default function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
 
   return (
     <div className="flex h-screen w-screen">
-      <SideBar />
+      <Sidebar />
       <Chatbot id={id} />
     </div>
-  )
+  );
 }

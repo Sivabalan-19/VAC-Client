@@ -1,8 +1,22 @@
 import Cerebras from '@cerebras/cerebras_cloud_sdk';
-import { createDataStreamResponse, formatDataStreamPart } from 'ai';
 
 export const runtime = 'nodejs';
 
+type ChatMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+function isChatMessage(value: unknown): value is ChatMessage {
+  if (typeof value !== 'object' || value === null || !('role' in value) || !('content' in value)) {
+    return false;
+  }
+
+  return (
+    (value.role === 'user' || value.role === 'assistant') &&
+    typeof value.content === 'string'
+  );
+}
 
 export async function POST(req: Request) {
   const apiKey = process.env['CEREBRAS_API_KEY'];
@@ -22,15 +36,14 @@ export async function POST(req: Request) {
       ? (body as { messages?: unknown }).messages
       : undefined;
 
-  if (!Array.isArray(messages)) {
+  if (!Array.isArray(messages) || !messages.every(isChatMessage)) {
     return Response.json({ error: 'Invalid messages payload' }, { status: 400 });
   }
 
   const client = new Cerebras({ apiKey });
 
-  let completionCreateResponse: any;
   try {
-    completionCreateResponse = await client.chat.completions.create({
+    const completionCreateResponse = await client.chat.completions.create({
       messages: [
         {
           role: 'system',
@@ -49,47 +62,21 @@ export async function POST(req: Request) {
       ],
       model: 'llama3.1-8b',
     });
+
+    if (!('choices' in completionCreateResponse)) {
+      throw new Error('Cerebras returned an error response');
+    }
+
+    const firstChoice = completionCreateResponse.choices?.[0];
+    const assistantText =
+      (firstChoice && 'message' in firstChoice
+        ? firstChoice.message.content
+        : undefined) ??
+      'I am here with you. Tell me what is on your mind.';
+
+    return Response.json({ text: assistantText });
   } catch (error) {
     console.error('Cerebras chat completion failed', error);
     return Response.json({ error: 'Failed to generate response' }, { status: 502 });
   }
-
-  const assistantText =
-    completionCreateResponse?.choices?.[0]?.message?.content ??
-    'I am here with you. Tell me what is on your mind.';
-
-  const promptTokens = completionCreateResponse?.usage?.prompt_tokens;
-  const completionTokens = completionCreateResponse?.usage?.completion_tokens;
-
-  return createDataStreamResponse({
-    execute: (dataStream) => {
-      dataStream.write(formatDataStreamPart('text', assistantText));
-      dataStream.write(
-        formatDataStreamPart('finish_message', {
-          finishReason: 'stop',
-          usage:
-            typeof promptTokens === 'number' && typeof completionTokens === 'number'
-              ? {
-                  promptTokens,
-                  completionTokens,
-                }
-              : undefined,
-        })
-      );
-      dataStream.write(
-        formatDataStreamPart('finish_step', {
-          isContinued: false,
-          finishReason: 'stop',
-          usage:
-            typeof promptTokens === 'number' && typeof completionTokens === 'number'
-              ? {
-                  promptTokens,
-                  completionTokens,
-                }
-              : undefined,
-        })
-      );
-    },
-    onError: () => 'Failed to generate response',
-  });
 }
