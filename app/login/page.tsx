@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useStore, Role, DEMO_USERS } from "../context/StoreContext";
-import { checkHealth } from "../lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,16 +20,6 @@ export default function LoginPage() {
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [serverHealth, setServerHealth] = useState<"online" | "checking" | "offline">("checking");
-
-  useEffect(() => {
-    checkHealth()
-      .then((res) => {
-        if (res?.status === "ok") setServerHealth("online");
-        else setServerHealth("offline");
-      })
-      .catch(() => setServerHealth("offline"));
-  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,34 +128,6 @@ export default function LoginPage() {
       {/* Left Section - Login / Register Form */}
       <section className="flex flex-1 flex-col justify-center items-center px-6 py-12 sm:px-12 md:px-20 xl:px-24 bg-white dark:bg-[#0b1437] transition-colors duration-300 relative">
         <div className="w-full max-w-[440px]">
-          {/* Server API Health Pill */}
-          <div className="mb-4 flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                serverHealth === "online"
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                  : serverHealth === "checking"
-                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-                  : "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
-              }`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  serverHealth === "online"
-                    ? "bg-emerald-500 animate-pulse"
-                    : serverHealth === "checking"
-                    ? "bg-amber-500"
-                    : "bg-rose-500"
-                }`}
-              />
-              {serverHealth === "online"
-                ? "Backend API Online"
-                : serverHealth === "checking"
-                ? "Connecting to API..."
-                : "API Offline"}
-            </span>
-          </div>
-
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-[32px] sm:text-[36px] font-bold tracking-tight text-[#1b2559] dark:text-white leading-[44px]">

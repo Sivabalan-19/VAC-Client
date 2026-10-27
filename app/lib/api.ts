@@ -1,10 +1,16 @@
 const TOKEN_KEY = "vac_auth_token";
+<<<<<<< HEAD
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+=======
+// const API_BASE = "http://localhost:5000";
+const API_BASE = "https://vac-server.vercel.app";
+>>>>>>> 08f45cf3c63d75174752fa306455a0d945e8640a
 
 export class ApiError extends Error {
   status: number;
 
   constructor(message: string, status: number) {
+    
     super(message);
     this.name = "ApiError";
     this.status = status;
