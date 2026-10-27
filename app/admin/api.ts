@@ -44,6 +44,9 @@ export type AdminStudent = {
   registeredDate: string;
   attendanceStatus: "Present" | "Absent";
   markedTime?: string | null;
+  enrollmentStatus?: "Registered" | "Completed" | "Cancelled";
+  completedDate?: string | null;
+  creditsAwarded?: boolean;
 };
 
 export type AdminCourseInput = {
@@ -145,3 +148,28 @@ export async function markAllAdminStudentsPresent(courseId: number | string) {
 }
 
 export const markAllAdminPresent = markAllAdminStudentsPresent;
+
+export async function awardAdminCourseCredits(courseId: number | string) {
+  return apiRequest<{
+    message: string;
+    awardedCount: number;
+    totalEnrolled: number;
+    alreadyAwarded: number;
+    creditsPerStudent: number;
+  }>(`/api/admin/courses/${courseId}/award-credits`, {
+    method: "POST",
+  });
+}
+
+export async function awardAdminStudentCredit(
+  courseId: number | string,
+  studentId: number | string
+) {
+  return apiRequest<{
+    message: string;
+    awarded: boolean;
+    credits: number;
+  }>(`/api/admin/courses/${courseId}/students/${studentId}/award-credits`, {
+    method: "POST",
+  });
+}

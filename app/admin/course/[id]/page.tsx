@@ -10,6 +10,8 @@ import {
   updateAdminCourseStatus,
   updateAdminStudentAttendance,
   markAllAdminPresent,
+  awardAdminCourseCredits,
+  awardAdminStudentCredit,
   type AdminCourse,
   type AdminStudent,
 } from "../../api";
@@ -33,6 +35,7 @@ export default function AdminCourseDetailsPage() {
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReasonInput, setRejectReasonInput] = useState("");
+  const [awardingCredits, setAwardingCredits] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -115,9 +118,41 @@ export default function AdminCourseDetailsPage() {
     }
   };
 
+  const handleAwardAllCredits = async () => {
+    if (!course) return;
+    setAwardingCredits(true);
+    try {
+      const res = await awardAdminCourseCredits(course.id);
+      setStatusNotification(res.message);
+      await loadCourseData();
+      setTimeout(() => setStatusNotification(""), 5000);
+    } catch (err) {
+      setStatusNotification(err instanceof Error ? err.message : "Failed to award credits.");
+      setTimeout(() => setStatusNotification(""), 5000);
+    } finally {
+      setAwardingCredits(false);
+    }
+  };
+
+  const handleAwardSingleStudentCredit = async (studentId: string) => {
+    if (!course) return;
+    setAwardingCredits(true);
+    try {
+      const res = await awardAdminStudentCredit(course.id, studentId);
+      setStatusNotification(res.message);
+      await loadCourseData();
+      setTimeout(() => setStatusNotification(""), 4000);
+    } catch (err) {
+      setStatusNotification(err instanceof Error ? err.message : "Failed to award credit.");
+      setTimeout(() => setStatusNotification(""), 4000);
+    } finally {
+      setAwardingCredits(false);
+    }
+  };
+
   const getStatusBadgeStyle = (statusText?: string) => {
     if (!statusText) return "text-amber-700 dark:text-amber-400";
-    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {
+    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved") || statusText.includes("Registration")) {
       return "text-emerald-700 dark:text-emerald-400";
     }
     if (statusText.includes("Completed")) {
@@ -189,7 +224,7 @@ export default function AdminCourseDetailsPage() {
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">•</span>
                 <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${getStatusBadgeStyle(course.statusText)}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") || course.statusText?.includes("Approved") ? "bg-emerald-500" : course.statusText?.includes("Completed") ? "bg-blue-500" : course.statusText?.includes("Reject") ? "bg-rose-500" : "bg-amber-500"}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${(course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") || course.statusText?.includes("Approved") || course.statusText?.includes("Registration")) && !course.statusText?.includes("Pending") ? "bg-emerald-500" : course.statusText?.includes("Completed") ? "bg-blue-500" : course.statusText?.includes("Reject") ? "bg-rose-500" : "bg-amber-500"}`} />
                   {course.statusText}
                 </span>
               </div>
@@ -211,6 +246,88 @@ export default function AdminCourseDetailsPage() {
             <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-900 flex items-center justify-between">
               <span>{statusNotification}</span>
               <button onClick={() => setStatusNotification("")} className="cursor-pointer">✕</button>
+            </div>
+          )}
+
+          {/* 4-STAGE WORKFLOW LIFECYCLE TRACKER */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                course.statusText?.includes("Pending") || course.statusText?.includes("Reject")
+                  ? "bg-amber-50 dark:bg-amber-950/50 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-bold shadow-xs"
+                  : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-500"
+              }`}>
+                <span className="text-[10px] font-mono uppercase tracking-wider">Step 1</span>
+                <span className="font-bold">Faculty Proposal</span>
+                <span className="text-[10px] font-normal">{course.statusText?.includes("Pending") ? "Awaiting Review" : course.statusText?.includes("Reject") ? "Rejected" : "Submitted"}</span>
+              </div>
+
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                (course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending")
+                  ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 font-bold shadow-xs"
+                  : course.statusText?.includes("Attendance") || course.statusText?.includes("Completed")
+                  ? "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold"
+                  : "bg-slate-50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-800 text-slate-400"
+              }`}>
+                <span className="text-[10px] font-mono uppercase tracking-wider">Step 2</span>
+                <span className="font-bold">Approved & Open</span>
+                <span className="text-[10px] font-normal">{(course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending") ? "Students Enrolling" : "Student Registration"}</span>
+              </div>
+
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                course.statusText?.includes("Attendance") || (course.statusText?.includes("Opened") && !course.statusText?.includes("Registration"))
+                  ? "bg-blue-50 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-200 font-bold shadow-xs"
+                  : course.statusText?.includes("Completed")
+                  ? "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold"
+                  : "bg-slate-50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-800 text-slate-400"
+              }`}>
+                <span className="text-[10px] font-mono uppercase tracking-wider">Step 3</span>
+                <span className="font-bold">Event Active</span>
+                <span className="text-[10px] font-normal">Attendance Tracking</span>
+              </div>
+
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                course.statusText?.includes("Completed")
+                  ? "bg-purple-50 dark:bg-purple-950/50 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 font-bold shadow-xs"
+                  : "bg-slate-50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-800 text-slate-400"
+              }`}>
+                <span className="text-[10px] font-mono uppercase tracking-wider">Step 4</span>
+                <span className="font-bold">Completed</span>
+                <span className="text-[10px] font-normal">Credits & Records</span>
+              </div>
+            </div>
+          </div>
+
+          {/* APPROVAL CALLOUT BANNER FOR PENDING COURSES */}
+          {course.statusText?.includes("Pending") && (
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs shadow-xs">
+              <div className="flex items-start gap-3 text-amber-900 dark:text-amber-200">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <p className="font-extrabold text-sm text-amber-900 dark:text-amber-100">
+                    Faculty Proposal Pending Admin Approval
+                  </p>
+                  <p className="text-amber-700 dark:text-amber-300 text-xs mt-0.5">
+                    This course was submitted by faculty and is currently <strong>hidden from students</strong>. Approve this course to open student registration.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <button
+                  disabled={updatingStatus}
+                  onClick={() => handleUpdateStatus("Ready For Registration")}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>✓ Approve & Open Registration</span>
+                </button>
+                <button
+                  disabled={updatingStatus}
+                  onClick={() => setShowRejectModal(true)}
+                  className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 text-xs font-semibold cursor-pointer"
+                >
+                  Reject
+                </button>
+              </div>
             </div>
           )}
 
@@ -283,21 +400,41 @@ export default function AdminCourseDetailsPage() {
                 </h2>
 
                 <div className="space-y-2">
-                  {/* Approve */}
+                  {/* 1. Approve & Open for Registration */}
+                  <button
+                    disabled={updatingStatus}
+                    onClick={() => handleUpdateStatus("Ready For Registration")}
+                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${
+                      (course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending")
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:text-emerald-700 border border-slate-200 dark:border-slate-700"
+                    }`}
+                  >
+                    <div className="flex flex-col text-left">
+                      <span>✓ Approve & Open Registration</span>
+                      <span className="text-[10px] font-normal opacity-80">Students can register</span>
+                    </div>
+                    {((course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending")) && <span>Active</span>}
+                  </button>
+
+                  {/* 2. Open Attendance */}
                   <button
                     disabled={updatingStatus}
                     onClick={() => handleUpdateStatus("Attendance Opened")}
                     className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${
-                      course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") || course.statusText?.includes("Approved")
-                        ? "bg-emerald-600 text-white shadow-sm"
+                      course.statusText?.includes("Attendance") || (course.statusText?.includes("Opened") && !course.statusText?.includes("Registration"))
+                        ? "bg-blue-600 text-white shadow-sm"
                         : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     }`}
                   >
-                    <span>Approve & Open Attendance</span>
-                    {(course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") || course.statusText?.includes("Approved")) && <span>Active</span>}
+                    <div className="flex flex-col text-left">
+                      <span>Open Event Attendance</span>
+                      <span className="text-[10px] font-normal opacity-80">Event session is live</span>
+                    </div>
+                    {(course.statusText?.includes("Attendance") || (course.statusText?.includes("Opened") && !course.statusText?.includes("Registration"))) && <span>Active</span>}
                   </button>
 
-                  {/* Reject */}
+                  {/* 3. Reject Proposal */}
                   <button
                     disabled={updatingStatus}
                     onClick={() => setShowRejectModal(true)}
@@ -311,7 +448,7 @@ export default function AdminCourseDetailsPage() {
                     {course.statusText?.includes("Reject") && <span>Rejected</span>}
                   </button>
 
-                  {/* Set Pending */}
+                  {/* 4. Set Pending Review */}
                   <button
                     disabled={updatingStatus}
                     onClick={() => handleUpdateStatus("Approval Pending...")}
@@ -321,17 +458,17 @@ export default function AdminCourseDetailsPage() {
                         : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     }`}
                   >
-                    <span>Set Pending</span>
+                    <span>Set Pending Review</span>
                     {course.statusText?.includes("Pending") && <span>Pending</span>}
                   </button>
 
-                  {/* Course Completed */}
+                  {/* 5. Course Completed */}
                   <button
                     disabled={updatingStatus}
                     onClick={() => handleUpdateStatus("Course Completed")}
                     className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${
                       course.statusText?.includes("Completed")
-                        ? "bg-blue-600 text-white shadow-sm"
+                        ? "bg-purple-600 text-white shadow-sm"
                         : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     }`}
                   >
@@ -357,6 +494,47 @@ export default function AdminCourseDetailsPage() {
                   </p>
                 </div>
               </div>
+
+              {/* COURSE CREDITS AWARD PANEL */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Student Credits
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-mono font-bold text-xs border border-indigo-200 dark:border-indigo-800">
+                    {course.credits} Credits / Student
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">Awarded Students</span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {students.filter((s) => s.creditsAwarded || s.enrollmentStatus === "Completed").length} / {students.length}
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${students.length > 0 ? (students.filter((s) => s.creditsAwarded || s.enrollmentStatus === "Completed").length / students.length) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                    Awards {course.credits} credits to students upon course completion. Prevents duplicate credit awards if clicked again.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={awardingCredits || students.length === 0}
+                  onClick={handleAwardAllCredits}
+                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>🎖️ {awardingCredits ? "Awarding Credits..." : `Award ${course.credits} Credits to Enrolled Students`}</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -370,7 +548,7 @@ export default function AdminCourseDetailsPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   disabled={updatingAttendance || students.length === 0}
@@ -378,6 +556,15 @@ export default function AdminCourseDetailsPage() {
                   className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                 >
                   Mark All Present
+                </button>
+
+                <button
+                  type="button"
+                  disabled={awardingCredits || students.length === 0}
+                  onClick={handleAwardAllCredits}
+                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>🎖️ {awardingCredits ? "Awarding..." : `Award Credits (${course.credits} Cr)`}</span>
                 </button>
 
                 <div className="relative w-full sm:w-64">
@@ -409,59 +596,92 @@ export default function AdminCourseDetailsPage() {
                     <th className="py-3 px-4">Roll Number</th>
                     <th className="py-3 px-4">Department & Year</th>
                     <th className="py-3 px-4">Email</th>
-                    <th className="py-3 px-4">Attendance Status</th>
+                    <th className="py-3 px-4">Attendance</th>
+                    <th className="py-3 px-4">Credits Status</th>
+                    <th className="py-3 px-4 text-center">Credit Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-6 text-center text-slate-400 font-medium">
+                      <td colSpan={7} className="py-6 text-center text-slate-400 font-medium">
                         No enrolled students found.
                       </td>
                     </tr>
                   ) : (
-                    filteredStudents.map((student) => (
-                      <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-xs">
-                              {student.studentName?.charAt(0) || "S"}
+                    filteredStudents.map((student) => {
+                      const isCompleted = student.enrollmentStatus === "Completed" || !!student.creditsAwarded;
+
+                      return (
+                        <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-xs">
+                                {student.studentName?.charAt(0) || "S"}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-900 dark:text-white">{student.studentName}</p>
+                                <p className="text-[10px] text-slate-400">ID: {student.id}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-bold text-slate-900 dark:text-white">{student.studentName}</p>
-                              <p className="text-[10px] text-slate-400">ID: {student.id}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 font-mono font-semibold text-slate-700 dark:text-slate-300">
-                          {student.rollNo}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {student.department} {student.year ? `(${student.year})` : ""}
-                        </td>
-                        <td className="py-3 px-4 text-slate-500">{student.email}</td>
-                        <td className="py-3.5 px-4">
-                          <button
-                            type="button"
-                            disabled={updatingAttendance}
-                            onClick={() => handleToggleAttendance(student.id, student.attendanceStatus)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap shadow-xs border cursor-pointer hover:opacity-80 transition ${
-                              student.attendanceStatus === "Present"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
-                                : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
-                            }`}
-                            title="Click to toggle attendance"
-                          >
-                            <span
-                              className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                                student.attendanceStatus === "Present" ? "bg-emerald-500" : "bg-rose-500"
+                          </td>
+                          <td className="py-3 px-4 font-mono font-semibold text-slate-700 dark:text-slate-300">
+                            {student.rollNo}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                            {student.department} {student.year ? `(${student.year})` : ""}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">{student.email}</td>
+                          <td className="py-3.5 px-4">
+                            <button
+                              type="button"
+                              disabled={updatingAttendance}
+                              onClick={() => handleToggleAttendance(student.id, student.attendanceStatus)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap shadow-xs border cursor-pointer hover:opacity-80 transition ${
+                                student.attendanceStatus === "Present"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
+                                  : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
                               }`}
-                            />
-                            {student.attendanceStatus}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                              title="Click to toggle attendance"
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                                  student.attendanceStatus === "Present" ? "bg-emerald-500" : "bg-rose-500"
+                                }`}
+                              />
+                              {student.attendanceStatus}
+                            </button>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {isCompleted ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                ✓ {course.credits} Cr Awarded
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                Pending ({course.credits} Cr)
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {isCompleted ? (
+                              <span className="text-[11px] text-slate-400 font-semibold">Awarded</span>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={awardingCredits}
+                                onClick={() => handleAwardSingleStudentCredit(student.id)}
+                                className="px-2.5 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 dark:text-indigo-300 font-bold text-[11px] transition cursor-pointer border border-indigo-200 dark:border-indigo-800"
+                              >
+                                + Award {course.credits} Cr
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

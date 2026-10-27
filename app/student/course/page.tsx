@@ -376,11 +376,11 @@ export default function StudentCoursePage() {
               </button>
               <button
                 type="button"
-                disabled={registering}
+                disabled={registering || (selectedCourse.available ?? 0) <= 0}
                 onClick={() => handleRegisterCourse(selectedCourse)}
                 className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-60"
               >
-                {registering ? "Registering..." : "Register Course"}
+                {registering ? "Registering..." : (selectedCourse.available ?? 0) <= 0 ? "Course Full" : "Register Course"}
               </button>
             </div>
           </div>

@@ -60,7 +60,15 @@ export default function AdminDashboardPage() {
   }, []);
 
   const getStatusBadge = (statusText: string) => {
-    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {
+    if (statusText.includes("Pending")) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-amber-600 dark:text-amber-400 font-bold text-[13px] tracking-wide bg-transparent">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+          {statusText}
+        </span>
+      );
+    }
+    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved") || statusText.includes("Registration")) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap text-emerald-600 dark:text-emerald-400 font-bold text-[13px] tracking-wide bg-transparent">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -153,24 +161,36 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Card 2: Pending Approvals */}
-            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Pending Approvals</span>
+            <div
+              onClick={() => router.push("/admin/course?tab=pending")}
+              className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-600 transition-all rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 cursor-pointer group"
+            >
               <div className="flex items-center justify-between">
-                <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#16a34a] dark:text-[#22c55e]">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Pending Approvals</span>
+                <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold group-hover:underline">Review →</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl md:text-4xl font-heading font-extrabold text-amber-600 dark:text-amber-400">
                   {loading ? "..." : dashboard.pendingCourses}
                 </p>
-                <div className="w-12 h-12 rounded-2xl bg-[#dcfce7] dark:bg-emerald-950/70 text-[#16a34a] dark:text-[#22c55e] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 </div>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Awaiting review</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-sans">Awaiting admin review</span>
             </div>
 
             {/* Card 3: Active Courses */}
-            <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Active Courses</span>
+            <div
+              onClick={() => router.push("/admin/course?tab=active")}
+              className="bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600 transition-all rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-3 cursor-pointer group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 font-sans">Active Courses</span>
+                <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold group-hover:underline">View →</span>
+              </div>
               <div className="flex items-center justify-between">
                 <p className="text-3xl md:text-4xl font-heading font-extrabold text-[#9333ea] dark:text-[#a855f7]">
                   {loading ? "..." : dashboard.activeCourses}

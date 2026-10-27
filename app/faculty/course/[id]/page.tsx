@@ -172,7 +172,13 @@ export default function FacultyCourseDetailsPage() {
                   {course.mode}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">•</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800">
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
+                  course.statusText?.includes("Pending")
+                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                    : course.statusText?.includes("Reject")
+                    ? "bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                    : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                }`}>
                   {course.statusText}
                 </span>
               </div>
@@ -194,6 +200,51 @@ export default function FacultyCourseDetailsPage() {
             <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-900 flex items-center justify-between">
               <span>{statusNotification}</span>
               <button onClick={() => setStatusNotification("")} className="cursor-pointer">✕</button>
+            </div>
+          )}
+
+          {/* PENDING APPROVAL NOTICE FOR FACULTY */}
+          {course.statusText?.includes("Pending") && (
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">⏳</span>
+              <div>
+                <p className="font-bold text-amber-900 dark:text-amber-100 text-sm">
+                  Course Proposal Pending Administrator Approval
+                </p>
+                <p className="text-amber-700 dark:text-amber-300 text-xs mt-0.5">
+                  This proposal was submitted to the admin for review. It will remain hidden from students until an administrator approves it. Once approved, student registration will open automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* REJECTED NOTICE FOR FACULTY */}
+          {course.statusText?.includes("Reject") && (
+            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">✕</span>
+              <div>
+                <p className="font-bold text-rose-900 dark:text-rose-100 text-sm">
+                  Course Proposal Rejected
+                </p>
+                <p className="text-rose-700 dark:text-rose-300 text-xs mt-0.5">
+                  Admin feedback: {course.rejectionReason || "No feedback provided. Please contact the administrator for more information."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* APPROVED AND REGISTRATION OPEN NOTICE */}
+          {(course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending") && (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">✓</span>
+              <div>
+                <p className="font-bold text-emerald-900 dark:text-emerald-100 text-sm">
+                  Approved & Open for Student Registration
+                </p>
+                <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-0.5">
+                  Admin has approved this course! Students can now discover and register for this course in their portal.
+                </p>
+              </div>
             </div>
           )}
 
