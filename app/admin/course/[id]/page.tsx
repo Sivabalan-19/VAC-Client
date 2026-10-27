@@ -288,7 +288,7 @@ export default function AdminCourseDetailsPage() {
 
               <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
                 course.statusText?.includes("Completed")
-                  ? "bg-purple-50 dark:bg-purple-950/50 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 font-bold shadow-xs"
+                  ? "bg-blue-50 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-200 font-bold shadow-xs"
                   : "bg-slate-50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-800 text-slate-400"
               }`}>
                 <span className="text-[10px] font-mono uppercase tracking-wider">Step 4</span>
@@ -468,7 +468,7 @@ export default function AdminCourseDetailsPage() {
                     onClick={() => handleUpdateStatus("Course Completed")}
                     className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-between ${
                       course.statusText?.includes("Completed")
-                        ? "bg-purple-600 text-white shadow-sm"
+                        ? "bg-blue-600 text-white shadow-sm"
                         : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     }`}
                   >
