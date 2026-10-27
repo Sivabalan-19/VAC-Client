@@ -22,3 +22,30 @@ body {
 .font-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
+/* Hide scrollbar across all browsers */
+.scrollbar-hide,
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide third-party badges, logos, and watermarks */
+[class*="liveblocks-badge"],
+[class*="lb-badge"],
+[class*="powered-by"],
+a[href*="liveblocks.io"],
+a[href*="livekit.io"],
+.lk-watermark {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
