@@ -47,6 +47,7 @@ export type AdminStudent = {
   enrollmentStatus?: "Registered" | "Completed" | "Cancelled";
   completedDate?: string | null;
   creditsAwarded?: boolean;
+  attendancePercentage?: number;
 };
 
 export type AdminCourseInput = {
@@ -148,18 +149,6 @@ export async function markAllAdminStudentsPresent(courseId: number | string) {
 }
 
 export const markAllAdminPresent = markAllAdminStudentsPresent;
-
-export async function awardAdminCourseCredits(courseId: number | string) {
-  return apiRequest<{
-    message: string;
-    awardedCount: number;
-    totalEnrolled: number;
-    alreadyAwarded: number;
-    creditsPerStudent: number;
-  }>(`/api/admin/courses/${courseId}/award-credits`, {
-    method: "POST",
-  });
-}
 
 export async function awardAdminStudentCredit(
   courseId: number | string,

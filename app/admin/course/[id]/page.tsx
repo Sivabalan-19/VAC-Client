@@ -10,7 +10,6 @@ import {
   updateAdminCourseStatus,
   updateAdminStudentAttendance,
   markAllAdminPresent,
-  awardAdminCourseCredits,
   awardAdminStudentCredit,
   type AdminCourse,
   type AdminStudent,
@@ -115,22 +114,6 @@ export default function AdminCourseDetailsPage() {
       setTimeout(() => setStatusNotification(""), 4000);
     } finally {
       setUpdatingAttendance(false);
-    }
-  };
-
-  const handleAwardAllCredits = async () => {
-    if (!course) return;
-    setAwardingCredits(true);
-    try {
-      const res = await awardAdminCourseCredits(course.id);
-      setStatusNotification(res.message);
-      await loadCourseData();
-      setTimeout(() => setStatusNotification(""), 5000);
-    } catch (err) {
-      setStatusNotification(err instanceof Error ? err.message : "Failed to award credits.");
-      setTimeout(() => setStatusNotification(""), 5000);
-    } finally {
-      setAwardingCredits(false);
     }
   };
 
@@ -501,7 +484,7 @@ export default function AdminCourseDetailsPage() {
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     Student Credits
                   </h2>
-                  <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-mono font-bold text-xs border border-indigo-200 dark:border-indigo-800">
+                  <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-mono font-bold text-xs border border-blue-200 dark:border-blue-800">
                     {course.credits} Credits / Student
                   </span>
                 </div>
@@ -515,25 +498,16 @@ export default function AdminCourseDetailsPage() {
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                      className="bg-blue-600 h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${students.length > 0 ? (students.filter((s) => s.creditsAwarded || s.enrollmentStatus === "Completed").length / students.length) * 100 : 0}%`,
                       }}
                     />
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
-                    Awards {course.credits} credits to students upon course completion. Prevents duplicate credit awards if clicked again.
+                    Award credits to each student individually when attendance reaches at least 50%.
                   </p>
                 </div>
-
-                <button
-                  type="button"
-                  disabled={awardingCredits || students.length === 0}
-                  onClick={handleAwardAllCredits}
-                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>🎖️ {awardingCredits ? "Awarding Credits..." : `Award ${course.credits} Credits to Enrolled Students`}</span>
-                </button>
               </div>
             </div>
           </div>
@@ -556,15 +530,6 @@ export default function AdminCourseDetailsPage() {
                   className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                 >
                   Mark All Present
-                </button>
-
-                <button
-                  type="button"
-                  disabled={awardingCredits || students.length === 0}
-                  onClick={handleAwardAllCredits}
-                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>🎖️ {awardingCredits ? "Awarding..." : `Award Credits (${course.credits} Cr)`}</span>
                 </button>
 
                 <div className="relative w-full sm:w-64">
@@ -596,7 +561,7 @@ export default function AdminCourseDetailsPage() {
                     <th className="py-3 px-4">Roll Number</th>
                     <th className="py-3 px-4">Department & Year</th>
                     <th className="py-3 px-4">Email</th>
-                    <th className="py-3 px-4">Attendance</th>
+                    <th className="py-3 px-4">Attendance %</th>
                     <th className="py-3 px-4">Credits Status</th>
                     <th className="py-3 px-4 text-center">Credit Action</th>
                   </tr>
@@ -611,6 +576,9 @@ export default function AdminCourseDetailsPage() {
                   ) : (
                     filteredStudents.map((student) => {
                       const isCompleted = student.enrollmentStatus === "Completed" || !!student.creditsAwarded;
+                      const attendancePercentage = student.attendancePercentage;
+                      const hasAttendancePercentage = typeof attendancePercentage === "number";
+                      const meetsAttendanceRequirement = hasAttendancePercentage && attendancePercentage >= 50;
 
                       return (
                         <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
@@ -633,24 +601,30 @@ export default function AdminCourseDetailsPage() {
                           </td>
                           <td className="py-3 px-4 text-slate-500">{student.email}</td>
                           <td className="py-3.5 px-4">
-                            <button
-                              type="button"
-                              disabled={updatingAttendance}
-                              onClick={() => handleToggleAttendance(student.id, student.attendanceStatus)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap shadow-xs border cursor-pointer hover:opacity-80 transition ${
-                                student.attendanceStatus === "Present"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
-                                  : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
-                              }`}
-                              title="Click to toggle attendance"
-                            >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                                  student.attendanceStatus === "Present" ? "bg-emerald-500" : "bg-rose-500"
+                            <div className="space-y-1">
+                              <span className={`font-bold ${
+                                !hasAttendancePercentage
+                                  ? "text-slate-500 dark:text-slate-400"
+                                  : meetsAttendanceRequirement
+                                    ? "text-emerald-700 dark:text-emerald-300"
+                                    : "text-rose-700 dark:text-rose-300"
+                              }`}>
+                                {hasAttendancePercentage ? `${attendancePercentage}%` : "Unavailable"}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={updatingAttendance}
+                                onClick={() => handleToggleAttendance(student.id, student.attendanceStatus)}
+                                className={`block text-[10px] font-semibold underline underline-offset-2 cursor-pointer disabled:opacity-50 ${
+                                  student.attendanceStatus === "Present"
+                                    ? "text-emerald-700 dark:text-emerald-300"
+                                    : "text-slate-500 dark:text-slate-400"
                                 }`}
-                              />
-                              {student.attendanceStatus}
-                            </button>
+                                title="Toggle attendance for the first session"
+                              >
+                                First session: {student.attendanceStatus}
+                              </button>
+                            </div>
                           </td>
                           <td className="py-3.5 px-4">
                             {isCompleted ? (
@@ -671,11 +645,22 @@ export default function AdminCourseDetailsPage() {
                             ) : (
                               <button
                                 type="button"
-                                disabled={awardingCredits}
+                                disabled={awardingCredits || !meetsAttendanceRequirement}
                                 onClick={() => handleAwardSingleStudentCredit(student.id)}
-                                className="px-2.5 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 dark:text-indigo-300 font-bold text-[11px] transition cursor-pointer border border-indigo-200 dark:border-indigo-800"
+                                title={
+                                  !hasAttendancePercentage
+                                    ? "Attendance percentage is unavailable from the API"
+                                    : meetsAttendanceRequirement
+                                      ? undefined
+                                      : "At least 50% attendance is required"
+                                }
+                                className="px-2.5 py-1 rounded-md bg-blue-50 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 text-blue-700 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-blue-300 font-bold text-[11px] transition cursor-pointer border border-blue-200 dark:border-blue-800"
                               >
-                                + Award {course.credits} Cr
+                                {!hasAttendancePercentage
+                                  ? "Attendance unavailable"
+                                  : meetsAttendanceRequirement
+                                    ? `Award ${course.credits} Cr`
+                                    : "Below 50%"}
                               </button>
                             )}
                           </td>
