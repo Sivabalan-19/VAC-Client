@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import AdminSidebar from "../../components/AdminSidebar";
-import { useStore } from "../../../context/StoreContext";
+import { DEFAULT_SESSIONS, useStore } from "../../../context/StoreContext";
 import {
   fetchAdminCourseDetails,
   fetchAdminCourseStudents,
@@ -24,10 +24,14 @@ export default function AdminCourseDetailsPage() {
 
   const [course, setCourse] = useState<AdminCourse | null>(null);
   const [students, setStudents] = useState<AdminStudent[]>([]);
+  const [sessionAttendanceMap, setSessionAttendanceMap] = useState<
+    Record<string, Record<string, "Present" | "Absent">>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [studentSearch, setStudentSearch] = useState("");
+  const [bulkSessionId, setBulkSessionId] = useState(DEFAULT_SESSIONS[0].id);
   const [statusNotification, setStatusNotification] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [updatingAttendance, setUpdatingAttendance] = useState(false);
@@ -46,10 +50,23 @@ export default function AdminCourseDetailsPage() {
     try {
       const [courseData, studentsData] = await Promise.all([
         fetchAdminCourseDetails(courseIdParam),
-        fetchAdminCourseStudents(courseIdParam),
+        Promise.all(
+          DEFAULT_SESSIONS.map(async (session) => ({
+            sessionId: session.id,
+            students: await fetchAdminCourseStudents(courseIdParam, session.id),
+          }))
+        ),
       ]);
       setCourse(courseData);
-      setStudents(studentsData);
+      setStudents(studentsData[0]?.students ?? []);
+      setSessionAttendanceMap(
+        Object.fromEntries(
+          studentsData.map(({ sessionId, students: roster }) => [
+            sessionId,
+            Object.fromEntries(roster.map((student) => [student.id, student.attendanceStatus])),
+          ])
+        )
+      );
       if (courseData.rejectionReason) {
         setRejectReasonInput(courseData.rejectionReason);
       }
@@ -86,12 +103,16 @@ export default function AdminCourseDetailsPage() {
     setShowRejectModal(false);
   };
 
-  const handleToggleAttendance = async (studentId: string, currentStatus: "Present" | "Absent") => {
+  const handleToggleAttendance = async (
+    studentId: string,
+    sessionId: string,
+    currentStatus: "Present" | "Absent"
+  ) => {
     if (!course) return;
     const nextStatus: "Present" | "Absent" = currentStatus === "Present" ? "Absent" : "Present";
     setUpdatingAttendance(true);
     try {
-      await updateAdminStudentAttendance(course.id, studentId, nextStatus);
+      await updateAdminStudentAttendance(course.id, studentId, nextStatus, sessionId);
       await loadCourseData();
     } catch (err) {
       setStatusNotification(err instanceof Error ? err.message : "Failed to update attendance.");
@@ -105,7 +126,7 @@ export default function AdminCourseDetailsPage() {
     if (!course) return;
     setUpdatingAttendance(true);
     try {
-      const res = await markAllAdminPresent(course.id);
+      const res = await markAllAdminPresent(course.id, bulkSessionId);
       setStatusNotification(res.message);
       await loadCourseData();
       setTimeout(() => setStatusNotification(""), 4000);
@@ -518,11 +539,23 @@ export default function AdminCourseDetailsPage() {
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Registered Student Roster</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {students.length} enrolled student(s) • Click status badge to toggle Present/Absent
+                  {students.length} enrolled student(s) • Click a session status to toggle Present/Absent
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <select
+                  aria-label="Session for mark all present"
+                  value={bulkSessionId}
+                  onChange={(event) => setBulkSessionId(event.target.value)}
+                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300"
+                >
+                  {DEFAULT_SESSIONS.map((session) => (
+                    <option key={session.id} value={session.id}>
+                      {session.dayLabel} · {session.sessionName}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button"
                   disabled={updatingAttendance || students.length === 0}
@@ -562,6 +595,7 @@ export default function AdminCourseDetailsPage() {
                     <th className="py-3 px-4">Department & Year</th>
                     <th className="py-3 px-4">Email</th>
                     <th className="py-3 px-4">Attendance %</th>
+                    <th className="py-3 px-4">Session Attendance</th>
                     <th className="py-3 px-4">Credits Status</th>
                     <th className="py-3 px-4 text-center">Credit Action</th>
                   </tr>
@@ -569,7 +603,7 @@ export default function AdminCourseDetailsPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-6 text-center text-slate-400 font-medium">
+                      <td colSpan={8} className="py-6 text-center text-slate-400 font-medium">
                         No enrolled students found.
                       </td>
                     </tr>
@@ -611,19 +645,34 @@ export default function AdminCourseDetailsPage() {
                               }`}>
                                 {hasAttendancePercentage ? `${attendancePercentage}%` : "Unavailable"}
                               </span>
-                              <button
-                                type="button"
-                                disabled={updatingAttendance}
-                                onClick={() => handleToggleAttendance(student.id, student.attendanceStatus)}
-                                className={`block text-[10px] font-semibold underline underline-offset-2 cursor-pointer disabled:opacity-50 ${
-                                  student.attendanceStatus === "Present"
-                                    ? "text-emerald-700 dark:text-emerald-300"
-                                    : "text-slate-500 dark:text-slate-400"
-                                }`}
-                                title="Toggle attendance for the first session"
-                              >
-                                First session: {student.attendanceStatus}
-                              </button>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="grid min-w-48 grid-cols-2 gap-1.5">
+                              {DEFAULT_SESSIONS.map((session) => {
+                                const sessionStatus =
+                                  sessionAttendanceMap[session.id]?.[student.id] ?? "Absent";
+                                return (
+                                  <button
+                                    key={session.id}
+                                    type="button"
+                                    disabled={updatingAttendance}
+                                    onClick={() =>
+                                      handleToggleAttendance(student.id, session.id, sessionStatus)
+                                    }
+                                    aria-label={`${session.dayLabel}, ${session.sessionName}: ${sessionStatus}. Toggle attendance.`}
+                                    title={`${session.dayLabel}, ${session.sessionName}: ${sessionStatus}`}
+                                    className={`rounded-md border px-2 py-1 text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                                      sessionStatus === "Present"
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+                                        : "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                    }`}
+                                  >
+                                    {session.dayLabel.replace("Day ", "D")} · S
+                                    {session.sessionName.split(" ")[1]}: {sessionStatus}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </td>
                           <td className="py-3.5 px-4">
