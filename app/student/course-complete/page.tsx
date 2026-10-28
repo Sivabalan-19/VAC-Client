@@ -164,7 +164,7 @@ export default function CourseCompletePage() {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                                     {filteredCourses.length > 0 ? filteredCourses.map((course) => {
-                                        const is100Attendance = (course.attendancePercentage ?? 100) >= 100;
+                                        const meetsAttendanceRequirement = (course.attendancePercentage ?? 100) >= 50;
                                         return (
                                             <tr key={course.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
                                                 <td className="px-5 py-4">
@@ -183,7 +183,7 @@ export default function CourseCompletePage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
-                                                    {is100Attendance ? (
+                                                    {meetsAttendanceRequirement ? (
                                                         <button
                                                             onClick={() => setSelectedCertCourse(course)}
                                                             type="button"
@@ -196,7 +196,7 @@ export default function CourseCompletePage() {
                                                         </button>
                                                     ) : (
                                                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                                                            {course.attendancePercentage}% Attendance (100% required)
+                                                            {course.attendancePercentage}% Attendance (50% required)
                                                         </span>
                                                     )}
                                                 </td>
