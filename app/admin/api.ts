@@ -44,6 +44,10 @@ export type AdminStudent = {
   registeredDate: string;
   attendanceStatus: "Present" | "Absent";
   markedTime?: string | null;
+  enrollmentStatus?: "Registered" | "Completed" | "Cancelled";
+  completedDate?: string | null;
+  creditsAwarded?: boolean;
+  attendancePercentage?: number;
 };
 
 export type AdminCourseInput = {
@@ -116,32 +120,50 @@ export async function updateAdminCourseStatus(
   });
 }
 
-export async function fetchAdminCourseStudents(courseId: number | string) {
-  const data = await apiRequest<{ students: AdminStudent[] }>(`/api/admin/courses/${courseId}/students`);
+export async function fetchAdminCourseStudents(courseId: number | string, sessionId = "d1s1") {
+  const params = new URLSearchParams({ sessionId });
+  const data = await apiRequest<{ students: AdminStudent[] }>(
+    `/api/admin/courses/${courseId}/students?${params.toString()}`
+  );
   return data.students ?? [];
 }
 
 export async function updateAdminStudentAttendance(
   courseId: number | string,
   studentId: number | string,
-  status: "Present" | "Absent"
+  status: "Present" | "Absent",
+  sessionId = "d1s1"
 ) {
   return apiRequest<{ message: string; attendance: unknown }>(
     `/api/admin/courses/${courseId}/students/${studentId}/attendance`,
     {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, sessionId }),
     }
   );
 }
 
-export async function markAllAdminStudentsPresent(courseId: number | string) {
+export async function markAllAdminStudentsPresent(courseId: number | string, sessionId = "d1s1") {
   return apiRequest<{ message: string; updated: number }>(
     `/api/admin/courses/${courseId}/attendance/mark-all-present`,
     {
       method: "POST",
+      body: JSON.stringify({ sessionId }),
     }
   );
 }
 
 export const markAllAdminPresent = markAllAdminStudentsPresent;
+
+export async function awardAdminStudentCredit(
+  courseId: number | string,
+  studentId: number | string
+) {
+  return apiRequest<{
+    message: string;
+    awarded: boolean;
+    credits: number;
+  }>(`/api/admin/courses/${courseId}/students/${studentId}/award-credits`, {
+    method: "POST",
+  });
+}

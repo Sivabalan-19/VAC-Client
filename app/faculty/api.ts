@@ -117,33 +117,37 @@ export async function fetchFacultyCourseDetails(courseId: number | string) {
   return data.course;
 }
 
-export async function fetchFacultyCourseStudents(courseId: number | string) {
-  const data = await apiRequest<{ students: FacultyStudent[] }>(`/api/faculty/courses/${courseId}/students`);
+export async function fetchFacultyCourseStudents(courseId: number | string, sessionId: string) {
+  const params = new URLSearchParams({ sessionId });
+  const data = await apiRequest<{ students: FacultyStudent[] }>(
+    `/api/faculty/courses/${courseId}/students?${params.toString()}`
+  );
   return data.students ?? [];
 }
 
 export async function updateFacultyStudentAttendance(
   courseId: number | string,
   studentId: number | string,
+  sessionId: string,
   status: "Present" | "Absent"
 ) {
   return apiRequest<{ message: string; attendance: unknown }>(
     `/api/faculty/courses/${courseId}/students/${studentId}/attendance`,
     {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, sessionId }),
     }
   );
 }
 
-export async function markAllFacultyStudentsPresent(courseId: number | string) {
+export async function markAllFacultyStudentsPresent(courseId: number | string, sessionId: string) {
   return apiRequest<{ message: string; updated: number }>(
     `/api/faculty/courses/${courseId}/attendance/mark-all-present`,
     {
       method: "POST",
+      body: JSON.stringify({ sessionId }),
     }
   );
 }
 
 export const markAllFacultyPresent = markAllFacultyStudentsPresent;
-

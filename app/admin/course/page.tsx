@@ -129,7 +129,10 @@ function AdminCourseContent() {
 
   // Helper for status badge color
   const getStatusBadgeStyle = (statusText: string) => {
-    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved")) {
+    if (statusText.includes("Pending")) {
+      return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60";
+    }
+    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved") || statusText.includes("Registration")) {
       return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60";
     }
     if (statusText.includes("Completed")) {
@@ -412,12 +415,25 @@ function AdminCourseContent() {
                       {/* Card Footer: Status Badge & Open Details Link */}
                       <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText.includes("Opened") || course.statusText.includes("Attendance") || course.statusText.includes("Approved") ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : "bg-amber-500"}`} />
+                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${!course.statusText.includes("Pending") && (course.statusText.includes("Opened") || course.statusText.includes("Attendance") || course.statusText.includes("Approved") || course.statusText.includes("Registration")) ? "bg-emerald-500" : course.statusText.includes("Completed") ? "bg-blue-500" : course.statusText.includes("Reject") ? "bg-rose-500" : "bg-amber-500"}`} />
                           {course.statusText}
                         </span>
-                        <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                          View Details →
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {!course.statusText.includes("Pending") && (
+                            <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                              🎖️ {course.credits} Cr
+                            </span>
+                          )}
+                          {course.statusText.includes("Pending") ? (
+                            <span className="text-amber-600 dark:text-amber-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                              Review Proposal →
+                            </span>
+                          ) : (
+                            <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                              Manage Course →
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

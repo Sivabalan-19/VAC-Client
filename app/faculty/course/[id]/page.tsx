@@ -21,6 +21,13 @@ interface SessionInfo {
   timeRange: string;
 }
 
+const SESSIONS: SessionInfo[] = [
+  { id: "d1s1", dayLabel: "Day 1", dateStr: "28 Aug 2026", sessionName: "Session 1 (Morning)", timeRange: "10:00 AM - 01:00 PM" },
+  { id: "d1s2", dayLabel: "Day 1", dateStr: "28 Aug 2026", sessionName: "Session 2 (Afternoon)", timeRange: "02:00 PM - 05:00 PM" },
+  { id: "d2s1", dayLabel: "Day 2", dateStr: "29 Aug 2026", sessionName: "Session 1 (Morning)", timeRange: "10:00 AM - 01:00 PM" },
+  { id: "d2s2", dayLabel: "Day 2", dateStr: "29 Aug 2026", sessionName: "Session 2 (Afternoon)", timeRange: "02:00 PM - 05:00 PM" },
+];
+
 export default function FacultyCourseDetailsPage() {
   const router = useRouter();
   const params = useParams();
@@ -30,21 +37,14 @@ export default function FacultyCourseDetailsPage() {
 
   const [course, setCourse] = useState<FacultyCourse | null>(null);
   const [students, setStudents] = useState<FacultyStudent[]>([]);
+  const [sessionAttendanceMap, setSessionAttendanceMap] = useState<Record<string, Record<string, "Present" | "Absent">>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [statusNotification, setStatusNotification] = useState("");
   const [updatingAttendance, setUpdatingAttendance] = useState(false);
 
-  // Multi-day & Multi-session Configuration
-  const sessions: SessionInfo[] = [
-    { id: "d1s1", dayLabel: "Day 1", dateStr: "28 Aug 2026", sessionName: "Session 1 (Morning)", timeRange: "10:00 AM - 01:00 PM" },
-    { id: "d1s2", dayLabel: "Day 1", dateStr: "28 Aug 2026", sessionName: "Session 2 (Afternoon)", timeRange: "02:00 PM - 05:00 PM" },
-    { id: "d2s1", dayLabel: "Day 2", dateStr: "29 Aug 2026", sessionName: "Session 1 (Morning)", timeRange: "10:00 AM - 01:00 PM" },
-    { id: "d2s2", dayLabel: "Day 2", dateStr: "29 Aug 2026", sessionName: "Session 2 (Afternoon)", timeRange: "02:00 PM - 05:00 PM" },
-  ];
-
   const [activeSessionId, setActiveSessionId] = useState<string>("d1s1");
-  const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  const activeSession = SESSIONS.find((s) => s.id === activeSessionId) || SESSIONS[0];
 
   const [studentSearch, setStudentSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "Present" | "Absent">("all");
@@ -57,12 +57,26 @@ export default function FacultyCourseDetailsPage() {
     setLoading(true);
     setError("");
     try {
-      const [courseData, studentsData] = await Promise.all([
+      const [courseData, sessionRosters] = await Promise.all([
         fetchFacultyCourseDetails(courseIdParam),
-        fetchFacultyCourseStudents(courseIdParam),
+        Promise.all(
+          SESSIONS.map(async (session) => ({
+            sessionId: session.id,
+            students: await fetchFacultyCourseStudents(courseIdParam, session.id),
+          }))
+        ),
       ]);
       setCourse(courseData);
-      setStudents(studentsData);
+
+      const initialSessionAttendance: Record<string, Record<string, "Present" | "Absent">> = {};
+      sessionRosters.forEach(({ sessionId, students: roster }) => {
+        initialSessionAttendance[sessionId] = {};
+        roster.forEach((student) => {
+          initialSessionAttendance[sessionId][student.id] = student.attendanceStatus;
+        });
+      });
+      setStudents(sessionRosters[0]?.students ?? []);
+      setSessionAttendanceMap(initialSessionAttendance);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load course data.");
     } finally {
@@ -74,14 +88,26 @@ export default function FacultyCourseDetailsPage() {
     loadCourseData();
   }, [loadCourseData]);
 
+  const getStudentSessionStatus = (studentId: string) => sessionAttendanceMap[activeSessionId]?.[studentId] || "Absent";
+
+  const updateStudentSessionState = (studentId: string, newStatus: "Present" | "Absent") => {
+    setSessionAttendanceMap((prev) => ({
+      ...prev,
+      [activeSessionId]: {
+        ...(prev[activeSessionId] || {}),
+        [studentId]: newStatus,
+      },
+    }));
+  };
+
   // Toggle individual student attendance
   const toggleAttendance = async (studentId: string, newStatus: "Present" | "Absent") => {
     if (!course) return;
     setUpdatingAttendance(true);
     try {
-      await updateFacultyStudentAttendance(course.id, studentId, newStatus);
-      setStatusNotification(`Attendance updated for student.`);
-      await loadCourseData();
+      await updateFacultyStudentAttendance(course.id, studentId, activeSessionId, newStatus);
+      updateStudentSessionState(studentId, newStatus);
+      setStatusNotification("Attendance updated for student.");
       setTimeout(() => setStatusNotification(""), 3000);
     } catch (err) {
       setStatusNotification(err instanceof Error ? err.message : "Failed to update attendance.");
@@ -91,14 +117,23 @@ export default function FacultyCourseDetailsPage() {
     }
   };
 
-  // Mark all students present
+  // Mark all students present for the current session only
   const handleMarkAllPresent = async () => {
     if (!course) return;
     setUpdatingAttendance(true);
     try {
-      const res = await markAllFacultyStudentsPresent(course.id);
+      const res = await markAllFacultyStudentsPresent(course.id, activeSessionId);
+      setSessionAttendanceMap((prev) => {
+        const sessionRecord = { ...(prev[activeSessionId] || {}) };
+        students.forEach((student) => {
+          sessionRecord[student.id] = "Present";
+        });
+        return {
+          ...prev,
+          [activeSessionId]: sessionRecord,
+        };
+      });
       setStatusNotification(res.message);
-      await loadCourseData();
       setTimeout(() => setStatusNotification(""), 4000);
     } catch (err) {
       setStatusNotification(err instanceof Error ? err.message : "Failed to mark all present.");
@@ -108,7 +143,7 @@ export default function FacultyCourseDetailsPage() {
     }
   };
 
-  const attendedCount = students.filter((s) => s.attendanceStatus === "Present").length;
+  const attendedCount = students.filter((s) => getStudentSessionStatus(s.id) === "Present").length;
   const totalStudentsCount = students.length;
   const attendanceRate = totalStudentsCount > 0 ? Math.round((attendedCount / totalStudentsCount) * 100) : 0;
 
@@ -119,7 +154,7 @@ export default function FacultyCourseDetailsPage() {
       st.rollNo?.toLowerCase().includes(studentSearch.toLowerCase()) ||
       st.department?.toLowerCase().includes(studentSearch.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || st.attendanceStatus === statusFilter;
+    const matchesStatus = statusFilter === "all" || getStudentSessionStatus(st.id) === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -172,7 +207,13 @@ export default function FacultyCourseDetailsPage() {
                   {course.mode}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">•</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800">
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
+                  course.statusText?.includes("Pending")
+                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                    : course.statusText?.includes("Reject")
+                    ? "bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                    : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                }`}>
                   {course.statusText}
                 </span>
               </div>
@@ -206,6 +247,51 @@ export default function FacultyCourseDetailsPage() {
             <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-900 flex items-center justify-between">
               <span>{statusNotification}</span>
               <button onClick={() => setStatusNotification("")} className="cursor-pointer">✕</button>
+            </div>
+          )}
+
+          {/* PENDING APPROVAL NOTICE FOR FACULTY */}
+          {course.statusText?.includes("Pending") && (
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">⏳</span>
+              <div>
+                <p className="font-bold text-amber-900 dark:text-amber-100 text-sm">
+                  Course Proposal Pending Administrator Approval
+                </p>
+                <p className="text-amber-700 dark:text-amber-300 text-xs mt-0.5">
+                  This proposal was submitted to the admin for review. It will remain hidden from students until an administrator approves it. Once approved, student registration will open automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* REJECTED NOTICE FOR FACULTY */}
+          {course.statusText?.includes("Reject") && (
+            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">✕</span>
+              <div>
+                <p className="font-bold text-rose-900 dark:text-rose-100 text-sm">
+                  Course Proposal Rejected
+                </p>
+                <p className="text-rose-700 dark:text-rose-300 text-xs mt-0.5">
+                  Admin feedback: {course.rejectionReason || "No feedback provided. Please contact the administrator for more information."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* APPROVED AND REGISTRATION OPEN NOTICE */}
+          {(course.statusText?.includes("Registration") || course.statusText?.includes("Approved")) && !course.statusText?.includes("Pending") && (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex items-start gap-3 text-xs shadow-xs">
+              <span className="text-xl">✓</span>
+              <div>
+                <p className="font-bold text-emerald-900 dark:text-emerald-100 text-sm">
+                  Approved & Open for Student Registration
+                </p>
+                <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-0.5">
+                  Admin has approved this course! Students can now discover and register for this course in their portal.
+                </p>
+              </div>
             </div>
           )}
 
@@ -283,7 +369,7 @@ export default function FacultyCourseDetailsPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {sessions.map((s) => {
+                {SESSIONS.map((s) => {
                   const isActive = activeSessionId === s.id;
                   return (
                     <button
@@ -376,7 +462,7 @@ export default function FacultyCourseDetailsPage() {
                     </tr>
                   ) : (
                     filteredStudents.map((student) => {
-                      const isPresent = student.attendanceStatus === "Present";
+                      const isPresent = getStudentSessionStatus(student.id) === "Present";
 
                       return (
                         <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
@@ -409,7 +495,7 @@ export default function FacultyCourseDetailsPage() {
                               <span
                                 className={`h-1.5 w-1.5 rounded-full ${isPresent ? "bg-emerald-500" : "bg-rose-500"}`}
                               />
-                              {student.attendanceStatus}
+                              {getStudentSessionStatus(student.id)}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center">

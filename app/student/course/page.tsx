@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useStore } from "../../context/StoreContext";
 import StudentSidebar from "../components/StudentSidebar";
@@ -368,14 +367,6 @@ export default function StudentCoursePage() {
 
             {/* Modal Actions */}
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/20">
-              {selectedCourse.mode === "Online" && (
-                <Link
-                  href={`/rooms/${selectedCourse.id}`}
-                  className="h-9 px-4 inline-flex items-center rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
-                >
-                  Open online course
-                </Link>
-              )}
               <button
                 type="button"
                 onClick={() => setSelectedCourse(null)}
@@ -385,11 +376,11 @@ export default function StudentCoursePage() {
               </button>
               <button
                 type="button"
-                disabled={registering}
+                disabled={registering || (selectedCourse.available ?? 0) <= 0}
                 onClick={() => handleRegisterCourse(selectedCourse)}
                 className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-60"
               >
-                {registering ? "Registering..." : "Register Course"}
+                {registering ? "Registering..." : (selectedCourse.available ?? 0) <= 0 ? "Course Full" : "Register Course"}
               </button>
             </div>
           </div>

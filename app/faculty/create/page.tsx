@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import FacultySidebar from "../components/FacultySidebar";
 import { useStore } from "../../context/StoreContext";
 import { createFacultyCourse } from "../api";
@@ -45,7 +46,7 @@ export default function FacultyCreateCoursePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseName.trim()) {
-      alert("Please provide a course title.");
+      toast.error("Please provide a course title.");
       return;
     }
 
@@ -76,10 +77,10 @@ export default function FacultyCreateCoursePage() {
           "Comprehensive value-added course designed to impart practical skills and industry certifications.",
       });
 
-      alert("New Value Added Course proposal created and submitted successfully!");
+      toast.success("Event created successfully!");
       router.push("/faculty/course");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create course proposal.");
+      toast.error(err instanceof Error ? err.message : "Failed to create course proposal.");
     }
   };
 

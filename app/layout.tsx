@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import "@livekit/components-styles";
 import "@livekit/components-styles/prefabs";
+import { Toaster } from "react-hot-toast";
 import { StoreProvider } from "./context/StoreContext";
 
 const spaceGrotesk = Space_Grotesk({
@@ -38,6 +39,7 @@ export default function RootLayout({
         <StoreProvider>
           {children}
         </StoreProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );

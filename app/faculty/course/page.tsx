@@ -62,12 +62,17 @@ export default function FacultyCourseListPage() {
 
   // Helper for status badge color
   const getStatusBadgeStyle = (statusText?: string) => {
-    if (!statusText) return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
-    if (statusText.includes("Opened") || statusText.includes("Attendance")) {
+    if (!statusText || statusText.includes("Pending")) {
+      return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
+    }
+    if (statusText.includes("Opened") || statusText.includes("Attendance") || statusText.includes("Approved") || statusText.includes("Registration")) {
       return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800";
     }
     if (statusText.includes("Completed")) {
       return "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800";
+    }
+    if (statusText.includes("Reject")) {
+      return "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800";
     }
     return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
   };
@@ -307,7 +312,7 @@ export default function FacultyCourseListPage() {
                       {/* Tightened Card Footer */}
                       <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadgeStyle(course.statusText)}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") ? "bg-emerald-500" : course.statusText?.includes("Completed") ? "bg-blue-500" : "bg-amber-500"}`} />
+                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${!course.statusText?.includes("Pending") && (course.statusText?.includes("Opened") || course.statusText?.includes("Attendance") || course.statusText?.includes("Approved") || course.statusText?.includes("Registration")) ? "bg-emerald-500" : course.statusText?.includes("Completed") ? "bg-blue-500" : course.statusText?.includes("Reject") ? "bg-rose-500" : "bg-amber-500"}`} />
                           {course.statusText}
                         </span>
                         <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">

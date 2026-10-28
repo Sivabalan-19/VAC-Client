@@ -29,11 +29,6 @@ export function CollaborativeEditor() {
       {/* Editor Sub-toolbar */}
       <div className="flex items-center justify-between px-4 py-2 bg-slate-50/80 border-b border-slate-200 text-xs text-slate-600 select-none">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-medium border border-emerald-200/60">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live Sync
-          </span>
-          <span className="text-slate-400">|</span>
           <span className="text-slate-500 font-mono">
             {linesCount} {linesCount === 1 ? "line" : "lines"}
           </span>
